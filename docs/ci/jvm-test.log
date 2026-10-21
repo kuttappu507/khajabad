@@ -20,8 +20,8 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
-> Task :app:mergeDebugResources
 > Task :app:createDebugCompatibleScreenManifests
+> Task :app:mergeDebugResources
 > Task :app:extractDeepLinksDebug
 > Task :app:parseDebugLocalResources
 > Task :app:processDebugMainManifest
@@ -39,9 +39,9 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:generateDebugUnitTestConfig
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:bundleDebugClassesToCompileJar
-> Task :app:processDebugJavaRes
 > Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:processDebugJavaRes
+> Task :app:bundleDebugClassesToCompileJar
 > Task :app:compileDebugUnitTestKotlin
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes
@@ -58,22 +58,8 @@ LaunchSmokeTest > drawerOpensAndListsDestinations PASSED
 
 LaunchSmokeTest > splashTransitionRendersHome PASSED
 
-LaunchSmokeTest > scrollReachesNextEventsAndBrowse FAILED
-    java.lang.AssertionError at LaunchSmokeTest.kt:87
+LaunchSmokeTest > scrollReachesNextEventsAndBrowse PASSED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792557329149.json
 
-6 tests completed, 1 failed
-
-> Task :app:testDebugUnitTest FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792557153039.json
-
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':app:testDebugUnitTest'.
-> There were failing tests. See the report at: file:///home/runner/work/khajabad/khajabad/app/build/reports/tests/testDebugUnitTest/index.html
-
-* Try:
-> Run with --scan to get full insights.
-
-BUILD FAILED in 2m 10s
+BUILD SUCCESSFUL in 2m 11s
 28 actionable tasks: 28 executed
