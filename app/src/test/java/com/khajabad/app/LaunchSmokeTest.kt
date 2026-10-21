@@ -84,8 +84,8 @@ class LaunchSmokeTest {
             .performScrollToNode(hasText("Next events"))
         assertText("Next events")
         compose.onAllNodes(hasScrollAction(), useUnmergedTree = true)[0]
-            .performScrollToNode(hasText("BROWSE"))
-        assertText("BROWSE")
+            .performScrollToNode(hasText("Browse"))
+        assertText("Browse")
     }
 
     @Test
