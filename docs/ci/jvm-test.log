@@ -27,8 +27,8 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest
 > Task :app:javaPreCompileDebug
-> Task :app:javaPreCompileDebugUnitTest FROM-CACHE
 > Task :app:mergeDebugShaders
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
@@ -39,14 +39,43 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:generateDebugUnitTestConfig
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:bundleDebugClassesToRuntimeJar
-> Task :app:bundleDebugClassesToCompileJar
 > Task :app:processDebugJavaRes
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
 > Task :app:compileDebugUnitTestKotlin
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes
-> Task :app:testDebugUnitTest
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792555991097.json
 
-BUILD SUCCESSFUL in 2m 15s
-28 actionable tasks: 27 executed, 1 from cache
+> Task :app:testDebugUnitTest
+
+LaunchSmokeTest > tabBarNavigatesToSearch FAILED
+    java.lang.AssertionError at LaunchSmokeTest.kt:75
+
+LaunchSmokeTest > tabBarNavigatesToCounter FAILED
+    java.lang.AssertionError at LaunchSmokeTest.kt:66
+
+LaunchSmokeTest > homeShowsBothBundledBooks FAILED
+    java.lang.AssertionError at LaunchSmokeTest.kt:50
+
+LaunchSmokeTest > drawerOpensAndListsDestinations FAILED
+    java.lang.AssertionError at LaunchSmokeTest.kt:57
+
+LaunchSmokeTest > splashTransitionRendersHome FAILED
+    java.lang.AssertionError at LaunchSmokeTest.kt:42
+
+5 tests completed, 5 failed
+
+> Task :app:testDebugUnitTest FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792556454664.json
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:testDebugUnitTest'.
+> There were failing tests. See the report at: file:///home/runner/work/khajabad/khajabad/app/build/reports/tests/testDebugUnitTest/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2m 38s
+28 actionable tasks: 28 executed
