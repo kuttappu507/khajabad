@@ -4,16 +4,16 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-// Events feed (Notte function powering the website). Configured through
-// local.properties or an environment variable so the key never lives in git.
+// Events feed (the Notte function powering the website).
+// Lookup order: env var > local.properties > notte.properties > fallback.
 fun localOrEnv(key: String, fallback: String = ""): String {
     System.getenv(key)?.takeIf { it.isNotBlank() }?.let { return it }
     listOf("local.properties", "notte.properties").forEach { name ->
         val props = java.io.File(rootProject.projectDir, name)
         if (props.exists()) {
-            val value = java.util.Properties()
-                .apply { props.inputStream().use { load(it) } }
-                .getProperty(key)
+            val value = java.util.Properties().apply {
+                props.inputStream().use { stream -> this.load(stream) }
+            }.getProperty(key)
             if (!value.isNullOrBlank()) return value
         }
     }
