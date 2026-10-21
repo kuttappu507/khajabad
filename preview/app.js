@@ -823,7 +823,7 @@ function openEventSheet(id) {
     ${ev.description ? `<p class="es-desc">${ev.description}</p>` : ''}
     <div class="es-actions">
       <button class="es-btn filled" id="esCalendar">${svg('<path d="M12 5.4v13.2"/><path d="M5.4 12h13.2"/>')}കലണ്ടറിൽ ചേർക്കുക</button>
-      <button class="es-btn ghost" id="esShare">${svg('<path d="M12 15.4V3.8"/><path d="M8.2 7.4 12 3.6l3.8 3.8"/><path d="M5.6 12.4v19.6h12.8V12.4"/>')}പങ്കിടുക</button>
+      <button class="es-btn ghost" id="esShare">${svg('<path d="M12 15.4V3.8"/><path d="M8.2 7.4 12 3.6l3.8 3.8"/><path d="M5.6 12.4v7.2h12.8v-7.2"/>')}പങ്കിടുക</button>
     </div>`;
   document.getElementById('eventSheet').classList.add('on');
   document.getElementById('eventScrim').classList.add('on');

@@ -962,9 +962,11 @@ html.dark .switch { background: rgba(255, 255, 255, 0.16); }
 .event-sheet::-webkit-scrollbar { display: none; }
 .event-sheet.on { transform: none; }
 .sheet-grab { width: 42px; height: 4px; border-radius: 100px; background: var(--line); margin: 0 auto 16px; }
-.es-head { display: flex; align-items: center; gap: 14px; }
+.es-head { display: flex; align-items: flex-start; gap: 14px; }
 .es-head .date-block { width: 58px; height: 62px; }
+.es-head > span:nth-child(2) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .es-title { font-family: 'Mal', sans-serif; font-size: 17px; line-height: 1.45; font-weight: 500; }
+.es-when { display: block; }
 .es-when { font-size: 11px; color: var(--mint-deep); margin-top: 4px; }
 .es-close { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--paper-alt); display: grid; place-items: center; color: var(--ink-soft); flex: none; }
 .es-close svg { width: 13px; height: 13px; }
