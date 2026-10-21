@@ -38,8 +38,10 @@ jobs:
           git config user.email "ci@khajabad.app"
           git add -f docs/ci
           git commit -m "ci: jvm diagnostics [skip ci]" || exit 0
-          git pull --rebase origin ${GITHUB_REF_NAME} || true
-          git push origin HEAD:${GITHUB_REF_NAME}
+          for i in 1 2 3; do
+            git pull --rebase origin ${GITHUB_REF_NAME} || true
+            git push origin HEAD:${GITHUB_REF_NAME} && break || sleep 5
+          done
 
       - name: Fail if the app did not launch
         if: steps.test.outcome == 'failure'
@@ -48,6 +50,7 @@ jobs:
   emulator:
     name: Boot app on emulator
     runs-on: ubuntu-latest
+    needs: jvm
     steps:
       - uses: actions/checkout@v4
 
@@ -105,5 +108,7 @@ jobs:
           git config user.email "ci@khajabad.app"
           git add -f docs/ci
           git commit -m "ci: emulator diagnostics [skip ci]" || exit 0
-          git pull --rebase origin ${GITHUB_REF_NAME} || true
-          git push origin HEAD:${GITHUB_REF_NAME}
+          for i in 1 2 3; do
+            git pull --rebase origin ${GITHUB_REF_NAME} || true
+            git push origin HEAD:${GITHUB_REF_NAME} && break || sleep 5
+          done
