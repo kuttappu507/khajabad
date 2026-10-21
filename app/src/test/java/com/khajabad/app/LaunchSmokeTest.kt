@@ -4,6 +4,7 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.onAllNodes
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
@@ -79,10 +80,11 @@ class LaunchSmokeTest {
     @Test
     fun scrollReachesNextEventsAndBrowse() {
         settle()
-        compose.onNode(hasScrollAction(), useUnmergedTree = true)
+        // Home is one LazyColumn; scroll it until the lower sections compose.
+        compose.onAllNodes(hasScrollAction(), useUnmergedTree = true)[0]
             .performScrollToNode(hasText("Next events"))
         assertText("Next events")
-        compose.onNode(hasScrollAction(), useUnmergedTree = true)
+        compose.onAllNodes(hasScrollAction(), useUnmergedTree = true)[0]
             .performScrollToNode(hasText("BROWSE"))
         assertText("BROWSE")
     }
