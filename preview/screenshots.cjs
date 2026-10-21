@@ -54,9 +54,18 @@ fs.mkdirSync(OUT, { recursive: true });
 
   await page.evaluate(() => {
     document.getElementById('sheetScrim').click();
+    showScreen('events');
+  });
+  await shot('07-events');
+
+  await page.evaluate(() => openEventSheet(document.querySelector('.ev-row').dataset.event));
+  await shot('08-event-detail', 600);
+
+  await page.evaluate(() => {
+    closeEventSheet();
     showScreen('counter');
   });
-  await shot('07-counter');
+  await shot('07b-counter');
 
   await page.evaluate(() => {
     showScreen('search');
@@ -64,17 +73,17 @@ fs.mkdirSync(OUT, { recursive: true });
     input.value = 'സ്വലാത്ത്';
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  await shot('08-search');
+  await shot('09-search');
 
   await page.evaluate(() => showScreen('bookmarks'));
-  await shot('09-saved');
+  await shot('10-saved');
 
   // dark home
   await page.evaluate(() => {
     document.documentElement.classList.add('dark');
     showScreen('home');
   });
-  await shot('10-home-dark');
+  await shot('11-home-dark');
   await page.evaluate(() => document.documentElement.classList.remove('dark'));
 
   await browser.close();

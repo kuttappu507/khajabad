@@ -69,6 +69,108 @@ const saved = {
   json: (k, d) => { try { return JSON.parse(localStorage.getItem(k) ?? d); } catch (e) { return JSON.parse(d); } }
 };
 
+/* ------------------------------------------------------------ events feed
+   Live data comes from the website's Notte function:
+     POST https://us-prod.notte.cc/functions/<id>/runs/start
+   The preview runs offline, so it renders a sample payload of the same shape
+   the app's tolerant parser expects (title/start/location/description...).
+   Set window.KB_LIVE = true and serve through a proxy to use the live feed.
+*/
+const FEED_ENDPOINT = 'https://us-prod.notte.cc/functions/635cfdc6-667e-453c-bc57-bce54f35724b/runs/start';
+
+const SAMPLE_EVENTS = [
+  {
+    id: 'e1',
+    title: 'മാസാനത്ത് സ്വലാത്ത് ജൽസ',
+    start: Date.now() + 1000 * 60 * 60 * 27,
+    location: 'മുഹിയുദ്ദീൻ ജുമാ മസ്ജിദ്, കോഴിക്കോട്',
+    description: 'വാർഷിക സ്വലാത്ത് ജൽസ. മഗ്‌രിബ് നമസ്കാരത്തിന് ശേഷം ആരംഭിക്കും. എല്ലാവർക്കും സ്വാഗതം.',
+    highlighted: true,
+  },
+  {
+    id: 'e2',
+    title: 'ശജരത്തുൽ മുബാറക്ക ദിക്ർ മജ്ലിസ്',
+    start: Date.now() + 1000 * 60 * 60 * 24 * 6,
+    location: 'മലപ്പുറം ടൗൺ ജുമാ മസ്ജിദ്',
+    description: 'രാത്രി 8 മണിക്ക് ആരംഭം. മൗലിദ്, ദുആ, ആശീർവാദം.',
+  },
+  {
+    id: 'e3',
+    title: 'മജ്ലിസുന്നൂർ യൂത്ത് സംഗമം',
+    start: Date.now() + 1000 * 60 * 60 * 24 * 13,
+    location: 'സ്വലാത്ത് നഗർ, തിരൂരങ്ങാടി',
+    description: 'യുവജന സംഗമവും പുരസ്കാര സമർപ്പണവും.',
+  },
+  {
+    id: 'e4',
+    title: 'വാർഷിക മാലപ്പാട്ട് രാത്രി',
+    start: Date.now() + 1000 * 60 * 60 * 24 * 26,
+    location: 'വലിയ ജുമാ മസ്ജിദ്, കണ്ണൂർ',
+    description: 'മാലപ്പാട്ടും ബൈത്തുകളും അണിയിച്ചൊരുക്കി.',
+  },
+];
+
+let EVENTS = SAMPLE_EVENTS.slice();
+let EVENTS_FETCHED_AT = Date.now();
+let EVENTS_LIVE = false;
+
+function sortEvents(list) {
+  return list.slice().sort((a, b) => (a.start || Infinity) - (b.start || Infinity));
+}
+
+function nextEvent() {
+  const now = Date.now();
+  return sortEvents(EVENTS).find(e => !e.start || e.start >= now) || EVENTS[0] || null;
+}
+
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const MONTH_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+function dateBits(start) {
+  if (!start) return { day: '--', month: '' };
+  const d = new Date(start);
+  return { day: String(d.getDate()).padStart(2, '0'), month: MONTHS[d.getMonth()] };
+}
+
+function timeLabel(start) {
+  if (!start) return 'തീയതി ഉടൻ';
+  return new Date(start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function readable(start) {
+  if (!start) return 'തീയതി പ്രഖ്യാപിച്ചിട്ടില്ല';
+  const d = new Date(start);
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) +
+    ' · ' + timeLabel(start);
+}
+
+function sameDay(a, b) {
+  const x = new Date(a), y = new Date(b);
+  return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+}
+
+function relativeTime(ts) {
+  const mins = Math.max(0, Math.round((Date.now() - ts) / 60000));
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + ' min ago';
+  if (mins < 1440) return Math.round(mins / 60) + ' h ago';
+  return Math.round(mins / 1440) + ' d ago';
+}
+
+function countdown(start) {
+  if (!start) return 'തീയതി ഉടൻ';
+  const diff = start - Date.now();
+  if (diff <= 0) return 'ഇപ്പോൾ നടക്കുന്നു';
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor(diff / 3600000) % 24;
+  const mins = Math.floor(diff / 60000) % 60;
+  const secs = Math.floor(diff / 1000) % 60;
+  if (days >= 2) return 'ഇനി ' + days + ' ദിവസം';
+  if (days >= 1) return 'ഇനി 1 ദിവസം ' + hours + ' മണിക്കൂർ';
+  if (hours >= 1) return 'ഇനി ' + hours + 'h ' + mins + 'm';
+  return 'ഇനി ' + mins + 'm ' + secs + 's';
+}
+
 const state = {
   screen: 'splash',
   lastTab: 'home',
@@ -188,6 +290,7 @@ function showScreen(name) {
   if (name === 'counter') renderCounter();
   if (name === 'search') { renderSearch(); setTimeout(() => $('#searchInput').focus(), 220); }
   if (name === 'bookmarks') renderBookmarks();
+  if (name === 'events') renderEvents();
   if (name === 'reader') { updateReader(); }
   if (name === 'splash') playSplash();
 
@@ -632,6 +735,139 @@ function renderBookmarks() {
     </div>`).join('');
 }
 
+/* ------------------------------------------------------------ events UI */
+
+function renderEventHero() {
+  const host = document.getElementById('eventHero');
+  const ev = nextEvent();
+  if (!host) return;
+  if (!ev) {
+    host.innerHTML = '<div class="eh-top"><span class="eh-live">വരാനിരിക്കുന്ന പരിപാടികൾ ഒന്നുമില്ല</span></div>';
+    return;
+  }
+  const { day, month } = dateBits(ev.start);
+  const meta = [timeLabel(ev.start), ev.location].filter(Boolean).join(' · ');
+  host.innerHTML = `
+    <div class="eh-top">
+      <span class="eh-live"><i class="eh-dot"></i>${EVENTS_LIVE ? 'NEXT EVENT' : 'DEMO FEED'}</span>
+      ${ev.highlighted ? `<span class="eh-flag">${svg('<path d="M12 2.6c.9 5.5 3.9 8.5 9.4 9.4-5.5.9-8.5 3.9-9.4 9.4-.9-5.5-3.9-8.5-9.4-9.4 5.5-.9 8.5-3.9 9.4-9.4Z"/>')}FEATURED</span>` : ''}
+    </div>
+    <div class="eh-main">
+      <span class="date-block"><b>${day}</b><span>${month}</span></span>
+      <span>
+        <span class="eh-title">${ev.title}</span>
+        <span class="eh-meta">${meta}</span>
+      </span>
+    </div>
+    <div class="eh-foot">
+      <span class="eh-count">${svg('<circle cx="12" cy="12" r="8.4"/><path d="M12 11v5.4"/><path d="M12 7.9v.2"/>')}<span id="heroCountdown">${countdown(ev.start)}</span></span>
+      <span class="eh-cta">കാണുക ${svg('<path d="M9.4 5.4 16 12l-6.6 6.6"/>')}</span>
+    </div>`;
+}
+
+function renderEvents() {
+  const list = document.getElementById('eventsList');
+  const sub = document.getElementById('eventsSub');
+  if (!list) return;
+  const sorted = sortEvents(EVENTS);
+  sub.textContent = `${sorted.length} പരിപാടികൾ · ${relativeTime(EVENTS_FETCHED_AT)} അപ്ഡേറ്റ്`;
+  const note = document.getElementById('feedNote');
+  if (note) {
+    note.querySelector('span').textContent = EVENTS_LIVE
+      ? 'ലൈവ് ഫീഡ് · Notte ഫങ്ക്ഷൻ വഴി'
+      : 'ഡെമോ ഡാറ്റ · ആപ്പിൽ Notte ഫങ്ക്ഷനിൽ നിന്ന് ലൈവ് ആയി വരും';
+  }
+
+  let html = '';
+  let lastMonth = '';
+  sorted.forEach(ev => {
+    const d = ev.start ? new Date(ev.start) : null;
+    const monthKey = d ? `${MONTH_LONG[d.getMonth()]} ${d.getFullYear()}` : 'തീയതി പ്രഖ്യാപിക്കാത്തത്';
+    if (monthKey !== lastMonth) {
+      html += `<div class="month-label">${monthKey.toUpperCase()}</div>`;
+      lastMonth = monthKey;
+    }
+    const { day, month } = dateBits(ev.start);
+    const today = ev.start && sameDay(ev.start, Date.now());
+    const meta = [timeLabel(ev.start), ev.location].filter(Boolean).join(' · ');
+    html += `
+      <button class="ev-row ${today ? 'today' : ''}" data-event="${ev.id}">
+        <span class="date-block ${today ? '' : 'soft'}"><b>${day}</b><span>${month}</span></span>
+        <span class="ev-body">
+          <span class="ev-title">${ev.title}</span>
+          <span class="ev-meta">${today ? '<span class="ev-today">ഇന്ന്</span>' : ''}${meta}</span>
+        </span>
+        ${svg(I.chev)}
+      </button>`;
+  });
+  list.innerHTML = html;
+
+  const drawerSub = document.getElementById('drawerEventSub');
+  if (drawerSub) drawerSub.textContent = sorted.length ? `${sorted.length} പരിപാടികൾ` : 'അടുത്ത പരിപാടികൾ';
+}
+
+function openEventSheet(id) {
+  const ev = EVENTS.find(e => e.id === id);
+  if (!ev) return;
+  const { day, month } = dateBits(ev.start);
+  document.getElementById('eventSheetBody').innerHTML = `
+    <div class="es-head">
+      <span class="date-block"><b>${day}</b><span>${month}</span></span>
+      <span>
+        <span class="es-title">${ev.title}</span>
+        <span class="es-when">${readable(ev.start)}</span>
+      </span>
+      <button class="es-close" id="esClose">${svg('<path d="M5.6 5.6 18.4 18.4"/><path d="M18.4 5.6 5.6 18.4"/>')}</button>
+    </div>
+    ${ev.location ? `<div class="es-info"><span class="ico">${svg('<path d="M5.4 20.6V11.2C5.4 7.4 8.3 4.6 12 4.6s6.6 2.8 6.6 6.6v9.4"/><path d="M8.6 20.6v-9c0-2.3 1.5-3.9 3.4-3.9s3.4 1.6 3.4 3.9v9"/><path d="M3.4 20.6h17.2"/>')}</span><span><b>സ്ഥലം</b><span>${ev.location}</span></span></div>` : ''}
+    ${ev.description ? `<p class="es-desc">${ev.description}</p>` : ''}
+    <div class="es-actions">
+      <button class="es-btn filled" id="esCalendar">${svg('<path d="M12 5.4v13.2"/><path d="M5.4 12h13.2"/>')}കലണ്ടറിൽ ചേർക്കുക</button>
+      <button class="es-btn ghost" id="esShare">${svg('<path d="M12 15.4V3.8"/><path d="M8.2 7.4 12 3.6l3.8 3.8"/><path d="M5.6 12.4v19.6h12.8V12.4"/>')}പങ്കിടുക</button>
+    </div>`;
+  document.getElementById('eventSheet').classList.add('on');
+  document.getElementById('eventScrim').classList.add('on');
+
+  document.getElementById('esClose').onclick = closeEventSheet;
+  document.getElementById('esCalendar').onclick = () => toast('APK-യിൽ കലണ്ടർ തുറക്കും');
+  document.getElementById('esShare').onclick = () => toast('പങ്കിട്ടു · ' + ev.title);
+  document.getElementById('esCalendar').addEventListener('click', closeEventSheet);
+  document.getElementById('esShare').addEventListener('click', closeEventSheet);
+}
+
+function closeEventSheet() {
+  document.getElementById('eventSheet').classList.remove('on');
+  document.getElementById('eventScrim').classList.remove('on');
+}
+
+/** Optional live fetch — only works when served behind a proxy that adds auth. */
+async function tryLiveFeed() {
+  if (!window.KB_LIVE) return;
+  try {
+    const res = await fetch('/api/events', { method: 'POST' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const list = (Array.isArray(data) ? data : data.events || data.data || [])
+      .map((e, i) => ({
+        id: e.id || 'live' + i,
+        title: e.title || e.name || 'Event',
+        start: e.start ? new Date(e.start).getTime() : null,
+        location: e.location || e.venue || '',
+        description: e.description || '',
+        highlighted: !!(e.highlighted || e.featured),
+      }));
+    if (list.length) {
+      EVENTS = list;
+      EVENTS_FETCHED_AT = Date.now();
+      EVENTS_LIVE = true;
+      renderEvents();
+      renderEventHero();
+    }
+  } catch (e) {
+    console.warn('live feed unavailable, keeping sample data', e);
+  }
+}
+
 /* ------------------------------------------------------------ global bindings */
 
 function bindGlobal() {
@@ -717,6 +953,26 @@ function bindGlobal() {
     if (e.key === 'ArrowLeft') turnPage(-1);
   });
 
+  // events
+  document.getElementById('eventsRefresh').onclick = () => {
+    EVENTS_FETCHED_AT = Date.now();
+    renderEvents();
+    renderEventHero();
+    toast(EVENTS_LIVE ? 'അപ്ഡേറ്റ് ചെയ്തു' : 'ഡെമോ ഡാറ്റ പുതുക്കി');
+  };
+  document.getElementById('eventsList').addEventListener('click', e => {
+    const row = e.target.closest('[data-event]');
+    if (row) openEventSheet(row.dataset.event);
+  });
+  document.getElementById('eventScrim').onclick = closeEventSheet;
+
+  // hero + rows countdown ticker
+  setInterval(() => {
+    const el = document.getElementById('heroCountdown');
+    const ev = nextEvent();
+    if (el && ev) el.textContent = countdown(ev.start);
+  }, 1000);
+
   // fit device to viewport
   fitDevice();
   window.addEventListener('resize', fitDevice);
@@ -746,4 +1002,7 @@ renderLibrary();
 renderCounter();
 renderSearch();
 openDrawer(false);
+renderEventHero();
+renderEvents();
+tryLiveFeed();
 playSplash();

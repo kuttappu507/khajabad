@@ -32,9 +32,11 @@ Trouble installing ("App not installed")? See **[docs/INSTALL.md](docs/INSTALL.m
   <img src="docs/screens/06-reader-pages.jpg" width="220" alt="Page thumbnails" />
 </p>
 <p align="center">
-  <img src="docs/screens/07-counter.jpg" width="220" alt="Dhikr counter" />
-  <img src="docs/screens/08-search.jpg" width="220" alt="Search" />
-  <img src="docs/screens/10-home-dark.jpg" width="220" alt="Night mode" />
+  <img src="docs/screens/07-events.jpg" width="220" alt="Next events" />
+  <img src="docs/screens/08-event-detail.jpg" width="220" alt="Event details" />
+  <img src="docs/screens/07b-counter.jpg" width="220" alt="Dhikr counter" />
+  <img src="docs/screens/09-search.jpg" width="220" alt="Search" />
+  <img src="docs/screens/11-home-dark.jpg" width="220" alt="Night mode" />
 </p>
 
 ---
@@ -60,6 +62,8 @@ Two books are bundled and open instantly, offline:
 |---|---|---|---|
 | `shajarath` | ശജരത്തുൽ മുബാറക്ക | 12 | `app/src/main/assets/books/shajarath.pdf` |
 | `swalath_jalsah` | സ്വലാത്ത് ജൽസ | 10 | `app/src/main/assets/books/swalath_jalsah.pdf` |
+
+Upcoming events are **not** bundled — they come from your website's Notte function (see [docs/EVENTS_API.md](docs/EVENTS_API.md)).
 
 You can also import any PDF from the device — it is copied into app storage and appears in the library.
 
@@ -96,6 +100,25 @@ Everything is defined in code — `ui/theme/Theme.kt` and `ui/theme/KhIcons.kt`.
 
 ---
 
+## Next-events feed
+
+The app calls the same Notte function as the website:
+
+```http
+POST {NOTTE_BASE_URL}/functions/{NOTTE_FUNCTION_ID}/runs/start
+x-notte-api-key: …
+Content-Type: application/json
+
+{ "function_id": "…", "variables": { "query": "", "highlighted_only": false, "limit": 50 } }
+```
+
+- If the run is asynchronous the client polls `GET /runs/{id}` until the payload arrives (40 s ceiling).
+- The JSON is read **tolerantly**: the parser walks the response for the event array and maps ~40 field aliases (`title|name|event_name`, `start|date|datetime|when`, `location|venue|place`, …), so a change on the function side does not break the app.
+- Last good payload is cached in DataStore → the card and Events screen still work offline, marked "offline / saved · 2 h ago".
+- Configure the key via env var, `local.properties` or `notte.properties` (`NOTTE_API_KEY`, `NOTTE_FUNCTION_ID`, `NOTTE_BASE_URL`).
+
+Full details, response-shape notes and how to pin exact fields: **[docs/EVENTS_API.md](docs/EVENTS_API.md)**.
+
 ## Architecture
 
 ```
@@ -106,13 +129,14 @@ app/src/main/java/com/khajabad/app/
 │  ├─ Books.kt                Book + category catalogue
 │  └─ PdfPages.kt             PdfRenderer rasteriser (single thread, byte-budgeted cache)
 ├─ data/
-│  └─ KhajabadRepository.kt   Preferences DataStore: progress, bookmarks, counter, imports
+│  ├─ KhajabadRepository.kt   Preferences DataStore: progress, bookmarks, counter, imports, event cache
+│  └─ events/                 Event model, tolerant JSON parser, dates, Notte client
 └─ ui/
    ├─ KhajabadApp.kt          route graph + transitions + overlay chrome
    ├─ Route.kt
    ├─ theme/                  colours, type, motion, code-drawn icons
    ├─ components/             shared atoms (buttons, chips, PDF page, tab bar, toast)
-   ├─ splash/ home/ library/ reader/ counter/ search/ bookmarks/ drawer/
+   ├─ splash/ home/ library/ reader/ counter/ search/ bookmarks/ events/ drawer/
 ```
 
 - **Rendering** — pages are rasterised with the platform `android.graphics.pdf.PdfRenderer` at the size actually needed (thumbnail ↔ full screen), cached by byte budget, prefetched one page either side, and drawn with Compose `Image`.
@@ -148,7 +172,7 @@ Or just tap **PDF ചേർക്കുക** in the library at runtime.
 ## Notes & limits
 
 - The reader rasterises pages, so text selection/copy inside a page isn't available (fine for calligraphy-heavy devotional books). Everything else — bookmarks, progress, thumbnails — is app-level.
-- `minSdk 24`; night mode and the app's own palette are independent of the system.
+- `minSdk 23`; night mode and the app's own palette are independent of the system.
 - The Android sources were written in an environment without an Android SDK, so they have not been compiled here — run `./gradlew assembleDebug` (or the bundled CI workflow) to produce the APK. The interactive `preview/` prototype is self-contained and needs no build.
 
 ## Ideas for v1.1
