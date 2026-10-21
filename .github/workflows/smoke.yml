@@ -33,7 +33,12 @@ jobs:
         if: always()
         run: |
           mkdir -p docs/ci
-          if [ -f test.log ]; then cp test.log docs/ci/jvm-test.log; fi
+          # Only keep logs for red builds; a green run leaves the tree clean.
+          if [ "${{ steps.test.outcome }}" = "failure" ] && [ -f test.log ]; then
+            cp test.log docs/ci/jvm-test.log
+          else
+            rm -f docs/ci/jvm-test.log
+          fi
           git config user.name "khajabad-ci"
           git config user.email "ci@khajabad.app"
           git add -f docs/ci
@@ -104,7 +109,7 @@ jobs:
             grep -iE "FATAL|AndroidRuntime|Caused by|khajabad|Exception" logcat.txt | tail -400 > docs/ci/logcat.txt || true
           fi
           if [ -f shot.png ]; then cp shot.png docs/ci/emulator.png; fi
-          if [ -f activity.txt ]; then cp activity.txt docs/ci/activity.txt; fi
+          if [ -s activity.txt ]; then cp activity.txt docs/ci/activity.txt; else rm -f docs/ci/activity.txt; fi
           git config user.name "khajabad-ci"
           git config user.email "ci@khajabad.app"
           git add -f docs/ci
