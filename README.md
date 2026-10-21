@@ -11,6 +11,14 @@ A modern, offline PDF reader for Malayalam devotional books — built with **Kot
 
 ---
 
+## Install
+
+<a href="https://github.com/kuttappu507/khajabad/releases/download/latest/khajabad.apk"><b>⬇ Download khajabad.apk</b></a> — signed release build, Android 7.0+, ~16 MB, fully offline.
+
+Trouble installing ("App not installed")? See **[docs/INSTALL.md](docs/INSTALL.md)** — it is almost always an old copy signed with a different key, or the CI *zip* being installed instead of the `.apk`.
+
+---
+
 ## Screens
 
 <p align="center">
@@ -125,7 +133,7 @@ cd khajabad
 
 A ready GitHub Actions workflow (`.github/workflows/android.yml`) builds the debug APK on every push and uploads it as an artifact — the current build passes:
 
-- **APK:** open the [Actions → Android CI](https://github.com/kuttappu507/khajabad/actions/workflows/android.yml) run and download `khajabad-debug-apk`
+- **APK:** [releases/tag/latest → khajabad.apk](https://github.com/kuttappu507/khajabad/releases/download/latest/khajabad.apk), rebuilt and re-uploaded on every push (release-signed with the committed `app/keystore.p12`)
 - Screenshots in this README are generated automatically from `preview/` by `.github/workflows/screenshots.yml`.
 
 ### Adding your own PDFs
