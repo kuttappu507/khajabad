@@ -1,0 +1,40 @@
+name: Preview screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm i playwright@1.49.1
+          npx playwright install --with-deps chromium
+
+      - name: Serve preview
+        run: |
+          cd preview
+          python3 -m http.server 8080 &
+          sleep 2
+
+      - name: Capture
+        run: node preview/screenshots.cjs
+
+      - name: Commit screenshots
+        run: |
+          git config user.name "khajabad-bot"
+          git config user.email "bot@khajabad.app"
+          git add docs/screens
+          git commit -m "docs: refresh UI screenshots" || echo "nothing to commit"
+          git push
