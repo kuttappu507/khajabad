@@ -1,8 +1,6 @@
 package com.khajabad.app.data.events
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.sun.net.httpserver.HttpExchange
-import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -11,54 +9,98 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import java.net.InetSocketAddress
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.InetAddress
+import java.net.ServerSocket
+import java.net.Socket
 
 /**
- * End-to-end test of the events client against a local HTTP server.
+ * End-to-end test of the events client against a real socket.
  *
- * The Notte response shape was never observable from the build environment, so the
- * client is written to survive several shapes. These tests pin that behaviour:
+ * The Notte response shape was never observable from the build environment, so
+ * the client is written to survive several shapes. These tests pin that behaviour:
  * direct arrays, `output`-as-a-JSON-string, async runs that need polling, and a
  * server that rejects the Bearer header.
+ *
+ * The stub server is hand-rolled on [ServerSocket] because Android unit tests do
+ * not get `com.sun.net.httpserver` on their compile classpath.
  */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [30])
 class EventFeedTest {
 
-    private lateinit var server: HttpServer
-    private var port = 0
+    @Volatile
+    private var route: (Request) -> Reply = { Reply(404, "{}") }
+
     private val seen = mutableListOf<String>()
+    private lateinit var server: ServerSocket
+    private lateinit var worker: Thread
+    private var port = 0
+
+    private data class Request(val method: String, val path: String, val headers: Map<String, String>)
+    private data class Reply(val code: Int, val body: String)
 
     @Before
     fun startServer() {
-        server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
-            executor = null
-            createContext("/") { exchange -> handle(exchange) }
+        server = ServerSocket(0, 16, InetAddress.getByName("127.0.0.1"))
+        port = server.localPort
+        worker = Thread {
+            while (!server.isClosed) {
+                val socket = runCatching { server.accept() }.getOrNull() ?: break
+                runCatching { serve(socket) }
+            }
+        }.apply {
+            isDaemon = true
+            name = "event-feed-test-server"
             start()
         }
-        port = server.address.port
     }
 
     @After
     fun stopServer() {
-        server.stop(0)
+        runCatching { server.close() }
     }
 
-    /** Set per test. */
-    private var route: (HttpExchange) -> Unit = { exchange -> respond(exchange, 404, "{}") }
-
-    private fun handle(exchange: HttpExchange) {
-        synchronized(seen) {
-            seen += "${exchange.requestMethod} ${exchange.requestURI.path}"
+    private fun serve(socket: Socket) {
+        socket.use { s ->
+            val reader = BufferedReader(InputStreamReader(s.getInputStream(), Charsets.UTF_8))
+            val requestLine = reader.readLine() ?: return
+            val parts = requestLine.split(' ')
+            val method = parts.getOrElse(0) { "GET" }
+            val path = parts.getOrElse(1) { "/" }.substringBefore('?')
+            val headers = LinkedHashMap<String, String>()
+            while (true) {
+                val line = reader.readLine() ?: break
+                if (line.isEmpty()) break
+                val idx = line.indexOf(':')
+                if (idx > 0) headers[line.substring(0, idx).trim().lowercase()] = line.substring(idx + 1).trim()
+            }
+            val length = headers["content-length"]?.toIntOrNull() ?: 0
+            if (length > 0) {
+                val buffer = CharArray(length)
+                var read = 0
+                while (read < length) {
+                    val n = reader.read(buffer, read, length - read)
+                    if (n < 0) break
+                    read += n
+                }
+            }
+            synchronized(seen) { seen += "$method $path" }
+            val reply = route(Request(method, path, headers))
+            val bytes = reply.body.toByteArray(Charsets.UTF_8)
+            val head = buildString {
+                append("HTTP/1.1 ${reply.code} ${if (reply.code in 200..299) "OK" else "Error"}\r\n")
+                append("Content-Type: application/json\r\n")
+                append("Content-Length: ${bytes.size}\r\n")
+                append("Connection: close\r\n\r\n")
+            }.toByteArray(Charsets.UTF_8)
+            s.getOutputStream().apply {
+                write(head)
+                write(bytes)
+                flush()
+            }
         }
-        route(exchange)
-    }
-
-    private fun respond(exchange: HttpExchange, code: Int, body: String) {
-        val bytes = body.toByteArray(Charsets.UTF_8)
-        exchange.responseHeaders.add("Content-Type", "application/json")
-        exchange.sendResponseHeaders(code, bytes.size.toLong())
-        exchange.responseBody.use { it.write(bytes) }
     }
 
     private fun api() = EventApi(
@@ -106,40 +148,29 @@ class EventFeedTest {
 
     @Test
     fun fallsBackThroughEndpointsUntilEventsArrive() {
-        route = { exchange ->
-            val path = exchange.requestURI.path
+        route = { request ->
             when {
-                path.endsWith("/runs/start") ->
-                    respond(exchange, 404, """{"error":"unknown endpoint"}""")
-                path.endsWith("/runs") && exchange.requestMethod == "POST" ->
-                    respond(exchange, 200, """{"run_id":"abc","status":"running"}""")
-                path == "/runs/abc" -> respond(
-                    exchange,
-                    200,
-                    """{"status":"completed","output":${quote(eventsJson)}}""",
-                )
-                else -> respond(exchange, 404, "{}")
+                request.path.endsWith("/runs/start") -> Reply(404, """{"error":"unknown endpoint"}""")
+                request.path.endsWith("/runs") && request.method == "POST" ->
+                    Reply(200, """{"run_id":"abc","status":"running"}""")
+                request.path == "/runs/abc" ->
+                    Reply(200, """{"status":"completed","output":${quote(eventsJson)}}""")
+                else -> Reply(404, "{}")
             }
         }
 
-        val (events, fetchedAt) = runBlocking { api().fetchEvents() }
+        val api = api()
+        val (events, fetchedAt) = runBlocking { api.fetchEvents() }
         assertEquals(2, events.size)
         assertTrue(fetchedAt > 0)
-        assertTrue(
-            "trace should mention the poll: ${api().lastTrace}",
-            seen.any { it == "GET /runs/abc" },
-        )
+        assertTrue("should have polled the run:\n${api.lastTrace}", seen.contains("GET /runs/abc"))
     }
 
     @Test
     fun retriesWithoutBearerWhenRejected() {
-        route = { exchange ->
-            val auth = exchange.requestHeaders.getFirst("Authorization")
-            if (auth != null) {
-                respond(exchange, 401, """{"error":"bad bearer"}""")
-            } else {
-                respond(exchange, 200, eventsJson)
-            }
+        route = { request ->
+            if (request.headers["authorization"] != null) Reply(401, """{"error":"bad bearer"}""")
+            else Reply(200, eventsJson)
         }
 
         val (events, _) = runBlocking { api().fetchEvents() }
@@ -148,7 +179,7 @@ class EventFeedTest {
 
     @Test
     fun reportsEveryAttemptWhenNothingWorks() {
-        route = { exchange -> respond(exchange, 500, """{"error":"boom"}""") }
+        route = { Reply(500, """{"error":"boom"}""") }
         val api = api()
         val error = runCatching { runBlocking { api.fetchEvents() } }.exceptionOrNull()
         assertTrue("expected ApiError, got $error", error is EventApi.ApiError)
