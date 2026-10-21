@@ -37,7 +37,7 @@
   <div class="stage-body">
     <aside class="notes">
       <h1>khajabad</h1>
-      <p class="lede">An offline PDF library for Malayalam devotional books. Cream paper, mint surfaces, deep‑ink type — and motion that settles like water.</p>
+      <p class="lede">An offline PDF library for Malayalam devotional books. Lilac paper, a violet accent, inky type — and motion that settles like water.</p>
 
       <ul class="specs">
         <li><b>Kotlin + Jetpack Compose</b><span>Foundation, UI and Animation only — no Material components or theme.</span></li>
@@ -101,41 +101,30 @@
 
             <div class="scroller" id="homeScroll">
               <div class="hero">
-                <div class="hero-mark">
-                  <svg class="hero-orbit" viewBox="0 0 280 280">
-                    <circle cx="140" cy="140" r="123" class="orbit"/>
-                    <path class="hero-halo" d="M140 140m-84 0a84 84 0 1 0 168 0a84 84 0 1 0-168 0"/>
-                    <path class="hero-arch" d="M84 224V134c0-31 25-56 56-56s56 25 56 56v90" />
-                  </svg>
-                  <svg class="hero-book" viewBox="0 0 24 24"><path d="M3 6.2c3.5-1.6 6.5-1.2 9 .6 2.5-1.8 5.5-2.2 9-.6v12.4c-3.5-1.6-6.5-1.2-9 .6-2.5-1.8-5.5-2.2-9-.6Z"/><path d="M12 6.8v12.4"/></svg>
+                <div class="hero-top">
+                  <span class="hero-ico">
+                    <svg viewBox="0 0 24 24"><path d="M3 6.2c3.5-1.6 6.5-1.2 9 .6 2.5-1.8 5.5-2.2 9-.6v12.4c-3.5-1.6-6.5-1.2-9 .6-2.5-1.8-5.5-2.2-9-.6Z"/><path d="M12 6.8v12.4"/></svg>
+                  </span>
+                  <span class="hero-wordmark mal">ഖജാബാദ്</span>
+                  <span class="spacer"></span>
                   <svg class="hero-star" viewBox="0 0 24 24"><path d="M12 2.6c.9 5.5 3.9 8.5 9.4 9.4-5.5.9-8.5 3.9-9.4 9.4-.9-5.5-3.9-8.5-9.4-9.4 5.5-.9 8.5-3.9 9.4-9.4Z"/></svg>
                 </div>
-                <div class="hero-word">khajabad</div>
-                <div class="hero-sub mal">ഓഫ്‍ലൈൻ പുസ്തകശാല · മലയാളം</div>
+                <div class="hero-title mal">വായന,<br>എപ്പോഴും കൂടെ</div>
+                <div class="hero-pills">
+                  <span class="pill mal">2 പുസ്തകം</span>
+                  <span class="pill mal">22 പേജ്</span>
+                  <span class="pill mal">ഓഫ്‌ലൈൻ</span>
+                </div>
               </div>
 
               <div class="row-head">
-                <h2>Recent</h2>
-                <button class="link" data-go="library">See all
+                <h2>Your books</h2>
+                <button class="link" data-go="library">Library
                   <svg viewBox="0 0 24 24"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg>
                 </button>
               </div>
 
-              <div class="chips" id="recentChips"></div>
-
-              <div class="featured" id="featuredCard" data-book="shajarath">
-                <div class="featured-icon">
-                  <svg viewBox="0 0 24 24"><path d="M3 6.2c3.5-1.6 6.5-1.2 9 .6 2.5-1.8 5.5-2.2 9-.6v12.4c-3.5-1.6-6.5-1.2-9 .6-2.5-1.8-5.5-2.2-9-.6Z"/><path d="M12 6.8v12.4"/></svg>
-                </div>
-                <div class="featured-body">
-                  <div class="featured-title mal" id="featuredTitle">ശജരത്തുൽ മുബാറക്ക</div>
-                  <div class="featured-meta mal" id="featuredMeta">വായന തുടരുക · പേജ് 3 / 12</div>
-                </div>
-                <div class="featured-go">
-                  <svg viewBox="0 0 24 24"><path d="M9.4 5.4 16 12l-6.6 6.6"/></svg>
-                </div>
-                <i class="featured-progress" id="featuredProgress"></i>
-              </div>
+              <div id="homeBooks"></div>
 
               <div class="row-head" style="padding-top:22px">
                 <h2>Next events</h2>
@@ -144,9 +133,6 @@
                 </button>
               </div>
               <button class="event-hero" id="eventHero" data-go="events"></button>
-
-              <div class="kicker">BROWSE</div>
-              <div class="grid" id="categoryGrid"></div>
 
               <div class="foot">
                 <svg viewBox="0 0 24 24" class="foot-star"><path d="M12 2.6c.9 5.5 3.9 8.5 9.4 9.4-5.5.9-8.5 3.9-9.4 9.4-.9-5.5-3.9-8.5-9.4-9.4 5.5-.9 8.5-3.9 9.4-9.4Z"/></svg>

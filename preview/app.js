@@ -305,27 +305,25 @@ function openDrawer(open) {
 /* ------------------------------------------------------------ home */
 
 function renderHome() {
-  const recentIds = [state.lastBook, ...BOOKS.map(b => b.id).filter(id => id !== state.lastBook)];
-  const recent = recentIds.map(bookById);
-  const chips = $('#recentChips');
-  chips.innerHTML = recent.map(b => `<button class="chip" data-book="${b.id}">${b.title}</button>`).join('')
-    + `<button class="result-ico" style="background:transparent;border:1.2px solid var(--line);color:var(--ink-soft);align-self:center;width:48px;height:48px;border-radius:50%" data-go="library">${svg(I.chev)}</button>`;
-
-  const featured = bookById(state.lastBook);
-  const page = state.progress[featured.id] ?? 0;
-  $('#featuredTitle').textContent = featured.title;
-  $('#featuredMeta').textContent = page > 0
-    ? `വായന തുടരുക · പേജ് ${page + 1} / ${featured.pages}`
-    : `${featured.pages} പേജ് · ${featured.latin}`;
-  $('#featuredCard').dataset.book = featured.id;
-  $('#featuredProgress').style.width = `${Math.max(2, ((page + 1) / featured.pages) * 100)}%`;
-
-  const grid = $('#categoryGrid');
-  grid.innerHTML = CATEGORIES.map((c, i) => `
-    <button class="tile" data-cat="${i}" style="animation-delay:${0.06 * i + 0.1}s">
-      <span class="tile-btn">${svg(I[c.icon])}</span>
-      <span class="tile-label">${c.label}</span>
-    </button>`).join('');
+  const books = BOOKS;
+  const host = $('#homeBooks');
+  if (host) {
+    host.innerHTML = books.map(b => {
+      const page = state.progress[b.id] ?? 0;
+      const pct = Math.max(page > 0 ? ((page + 1) / b.pages) * 100 : 2, 2);
+      return `
+        <button class="home-book" data-book="${b.id}">
+          <span class="cover">${svg(I.book)}</span>
+          <span class="body">
+            <b class="mal">${b.title}</b>
+            <em class="mal">${b.latin} · ${b.pages} പേജ്</em>
+            <span class="track"><i style="width:${pct}%"></i></span>
+            <em class="mal" style="margin-top:6px">${page > 0 ? `പേജ് ${page + 1} / ${b.pages} · തുടരുക` : (b.subtitle || 'ഓഫ്‌ലൈൻ PDF')}</em>
+          </span>
+          <span class="go">${svg(I.chev)}</span>
+        </button>`;
+    }).join('');
+  }
 }
 
 function bindHomeParallax() {
@@ -913,7 +911,7 @@ function bindGlobal() {
         return;
       }
       const bookBtn = e.target.closest('[data-book]');
-      if (bookBtn && !bookBtn.closest('#featuredCard') && !bookBtn.closest('.tab')) {
+      if (bookBtn && !bookBtn.closest('.tab')) {
         openReader(bookBtn.dataset.book, bookBtn.dataset.page !== undefined ? Number(bookBtn.dataset.page) : (state.progress[bookBtn.dataset.book] ?? 0));
         return;
       }
@@ -934,7 +932,7 @@ function bindGlobal() {
     });
   });
 
-  $('#featuredCard').onclick = () => openReader($('#featuredCard').dataset.book, state.progress[$('#featuredCard').dataset.book] ?? 0);
+  // home book rows are handled by the delegated [data-book] listener above
 
   // library import (preview only)
   const importMsg = () => toast('APK-യിൽ സിസ്റ്റം ഫയൽ പിക്കർ തുറക്കും');
