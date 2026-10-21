@@ -34,6 +34,8 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Run on emulator
+        id: emulator
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
@@ -66,6 +68,37 @@ jobs:
             $ADB logcat -d > logcat.txt || true
             $ADB shell screencap -p /sdcard/shot.png && $ADB pull /sdcard/shot.png shot.png || true
 
+      - name: Report crash
+        if: always()
+        run: |
+          echo "emulator outcome: ${{ steps.emulator.outcome }}"
+          python3 - <<'PY'
+          import os, re
+          lines = []
+          if os.path.exists('logcat.txt'):
+              raw = open('logcat.txt', errors='ignore').read().splitlines()
+              keep = False
+              for line in raw:
+                  if 'FATAL EXCEPTION' in line or 'AndroidRuntime' in line:
+                      keep = True
+                  if keep:
+                      lines.append(line.strip())
+                  if keep and len(lines) > 120:
+                      break
+              if not lines:
+                  hits = [l.strip() for l in raw if re.search(r'(Exception|Error|khajabad)', l)]
+                  lines = hits[-120:]
+          else:
+              lines = ['logcat.txt missing - emulator step did not run']
+
+          report = '\n'.join(lines)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as fh:
+              fh.write('## Smoke run log\n\n```\n' + report[:60000] + '\n```\n')
+          for line in lines[:25]:
+              print('::error::' + line.replace('%', '%25').replace('\r', '')[:900])
+          print(report)
+          PY
+
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -75,3 +108,4 @@ jobs:
             logcat.txt
             shot.png
           if-no-files-found: warn
+          retention-days: 2
