@@ -54,6 +54,8 @@ import com.khajabad.app.core.Book
 import com.khajabad.app.core.Category
 import com.khajabad.app.core.Catalog
 import com.khajabad.app.data.PrefsState
+import com.khajabad.app.data.events.EventsState
+import com.khajabad.app.ui.events.NextEventCard
 import com.khajabad.app.ui.theme.KhIcon
 import com.khajabad.app.ui.components.Revealed
 import com.khajabad.app.ui.components.RoundIconButton
@@ -75,6 +77,9 @@ fun HomeScreen(
     onOpenBook: (Book) -> Unit,
     onSeeAll: () -> Unit,
     onCategory: (Category) -> Unit,
+    events: EventsState,
+    onOpenEvents: () -> Unit,
+    onRefreshEvents: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = Khaja.colors
@@ -146,6 +151,25 @@ fun HomeScreen(
                             modifier = Modifier.padding(horizontal = 22.dp),
                         )
                     }
+                }
+            }
+            item { Spacer(Modifier.height(24.dp)) }
+            item {
+                SectionHeader(
+                    title = "Next events",
+                    action = "All events",
+                    onAction = onOpenEvents,
+                    modifier = Modifier.padding(start = 22.dp, end = 18.dp, bottom = 12.dp),
+                )
+            }
+            item {
+                Revealed(index = 2) {
+                    NextEventCard(
+                        state = events,
+                        onOpen = onOpenEvents,
+                        onRetry = onRefreshEvents,
+                        modifier = Modifier.padding(horizontal = 22.dp),
+                    )
                 }
             }
             item { Spacer(Modifier.height(26.dp)) }

@@ -11,6 +11,9 @@ import androidx.lifecycle.viewModelScope
 import com.khajabad.app.core.Book
 import com.khajabad.app.data.KhajabadRepository
 import com.khajabad.app.data.PrefsState
+import com.khajabad.app.data.events.Event
+import com.khajabad.app.data.events.EventApi
+import com.khajabad.app.data.events.EventsState
 import com.khajabad.app.ui.Route
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,12 +26,75 @@ import kotlinx.coroutines.launch
 class KhajabadViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = KhajabadRepository(app)
+    private val eventApi = EventApi()
 
     val prefs: StateFlow<PrefsState> = repo.prefs
         .stateIn(viewModelScope, SharingStarted.Eagerly, PrefsState())
 
     val books: StateFlow<List<Book>> = repo.allBooks
         .stateIn(viewModelScope, SharingStarted.Eagerly, com.khajabad.app.core.Catalog.builtIn)
+
+    /* -------------------------------------------------------------- events */
+
+    private val _events = MutableStateFlow<EventsState>(EventsState.Idle)
+    val events: StateFlow<EventsState> = _events.asStateFlow()
+
+    private var lastEventFetch = 0L
+    var eventsConfigured: Boolean = false
+        private set
+
+    init {
+        eventsConfigured = eventApi.isConfigured
+        viewModelScope.launch {
+            val (cached, at) = repo.cachedEvents.first()
+            if (cached.isNotEmpty()) {
+                _events.value = EventsState.Live(cached, at)
+                lastEventFetch = at
+            }
+            refreshEvents(force = false)
+        }
+    }
+
+    /**
+     * Pulls the next-events feed. [force] skips the 10 minute freshness window;
+     * failures fall back to the cached payload rather than emptying the card.
+     */
+    fun refreshEvents(force: Boolean = true) {
+        if (!eventApi.isConfigured) {
+            _events.value = EventsState.Failed("Events feed is not configured in this build")
+            return
+        }
+        if (!force && System.currentTimeMillis() - lastEventFetch < FRESH_WINDOW_MS) return
+        if (_events.value is EventsState.Loading) return
+
+        val previous = _events.value
+        viewModelScope.launch {
+            _events.value = EventsState.Loading
+            runCatching { eventApi.fetchEvents() }
+                .onSuccess { (events, fetchedAt) ->
+                    lastEventFetch = fetchedAt
+                    _events.value = EventsState.Live(events, fetchedAt)
+                    repo.saveEvents(events, fetchedAt)
+                }
+                .onFailure { error ->
+                    val cached = (previous.events.ifEmpty { repo.cachedEvents.first().first })
+                    val cachedAt = (previous as? EventsState.Live)?.fetchedAt
+                        ?: (previous as? EventsState.Stale)?.fetchedAt
+                        ?: repo.cachedEvents.first().second
+                    _events.value = if (cached.isNotEmpty()) {
+                        EventsState.Stale(cached, cachedAt, error.message ?: "Offline")
+                    } else {
+                        EventsState.Failed(error.message ?: "Could not load events")
+                    }
+                }
+        }
+    }
+
+    fun nextEvent(): Event? = events.value.next
+
+    private companion object {
+        const val FRESH_WINDOW_MS = 10 * 60 * 1000L
+    }
 
     /* --------------------------------------------------------------- nav */
 

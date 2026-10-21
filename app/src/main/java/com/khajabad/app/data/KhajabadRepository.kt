@@ -5,12 +5,14 @@ import android.net.Uri
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.khajabad.app.core.Book
 import com.khajabad.app.core.Catalog
 import com.khajabad.app.core.PdfPages
+import com.khajabad.app.data.events.Event
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.json.JSONArray
@@ -45,6 +47,8 @@ class KhajabadRepository(private val context: Context) {
         val counterTarget = intPreferencesKey("counter_target")
         val dark = booleanPreferencesKey("dark")
         val imported = stringPreferencesKey("imported_books")
+        val events = stringPreferencesKey("events_cache")
+        val eventsAt = longPreferencesKey("events_fetched_at")
     }
 
     val prefs: Flow<PrefsState> = context.dataStore.data.map { p ->
@@ -63,6 +67,18 @@ class KhajabadRepository(private val context: Context) {
     }
 
     val allBooks: Flow<List<Book>> = importedBooks.map { Catalog.builtIn + it }
+
+    /** Last successful event payload, kept so the card still works offline. */
+    val cachedEvents: Flow<Pair<List<Event>, Long>> = context.dataStore.data.map { p ->
+        parseEvents(p[K.events].orEmpty()) to (p[K.eventsAt] ?: 0L)
+    }
+
+    suspend fun saveEvents(events: List<Event>, fetchedAt: Long) {
+        context.dataStore.edit { p ->
+            p[K.events] = writeEvents(events)
+            p[K.eventsAt] = fetchedAt
+        }
+    }
 
     suspend fun setPage(bookId: String, page: Int) {
         context.dataStore.edit { p ->
@@ -151,6 +167,43 @@ class KhajabadRepository(private val context: Context) {
             p[K.imported] = writeBooks(list)
         }
         book.filePath?.let { runCatching { File(it).delete() } }
+    }
+
+    private fun parseEvents(raw: String): List<Event> = runCatching {
+        if (raw.isBlank()) return emptyList()
+        val arr = JSONArray(raw)
+        (0 until arr.length()).mapNotNull { i ->
+            val o = arr.optJSONObject(i) ?: return@mapNotNull null
+            Event(
+                id = o.optString("id"),
+                title = o.optString("title"),
+                start = o.optLong("start").takeIf { it > 0L },
+                end = o.optLong("end").takeIf { it > 0L },
+                location = o.optString("location").takeIf { it.isNotBlank() },
+                description = o.optString("description").takeIf { it.isNotBlank() },
+                url = o.optString("url").takeIf { it.startsWith("http") },
+                imageUrl = o.optString("image").takeIf { it.startsWith("http") },
+                highlighted = o.optBoolean("highlighted"),
+            )
+        }
+    }.getOrDefault(emptyList())
+
+    private fun writeEvents(events: List<Event>): String {
+        val arr = JSONArray()
+        events.take(60).forEach { e ->
+            arr.put(JSONObject().apply {
+                put("id", e.id)
+                put("title", e.title)
+                put("start", e.start ?: 0L)
+                put("end", e.end ?: 0L)
+                put("location", e.location.orEmpty())
+                put("description", e.description.orEmpty())
+                put("url", e.url.orEmpty())
+                put("image", e.imageUrl.orEmpty())
+                put("highlighted", e.highlighted)
+            })
+        }
+        return arr.toString()
     }
 
     private fun parseProgress(raw: String): Map<String, Int> =

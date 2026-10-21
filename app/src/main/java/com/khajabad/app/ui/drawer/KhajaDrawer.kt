@@ -54,6 +54,7 @@ fun KhajaDrawer(
     dark: Boolean,
     bookCount: Int,
     bookmarkCount: Int,
+    eventSubtitle: String,
     onClose: () -> Unit,
     onNavigate: (Route) -> Unit,
     onToggleDark: () -> Unit,
@@ -132,6 +133,9 @@ fun KhajaDrawer(
                 }
                 DrawerItem(KhIcons.Search, "Search", "വേഗത്തിൽ കണ്ടെത്തുക", current is Route.Search) {
                     onNavigate(Route.Search)
+                }
+                DrawerItem(KhIcons.Star8, "Events", eventSubtitle, current is Route.Events) {
+                    onNavigate(Route.Events)
                 }
 
                 Spacer(Modifier.height(20.dp))

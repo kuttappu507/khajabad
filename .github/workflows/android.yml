@@ -30,6 +30,8 @@ jobs:
 
       - name: Assemble release + debug
         id: assemble
+        env:
+          NOTTE_API_KEY: ${{ secrets.NOTTE_API_KEY }}
         continue-on-error: true
         run: ./gradlew assembleRelease assembleDebug --console=plain --stacktrace > build.log 2>&1
 

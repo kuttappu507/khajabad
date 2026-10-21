@@ -48,6 +48,8 @@ import com.khajabad.app.ui.components.BarDestination
 import com.khajabad.app.ui.components.KhajaBottomBar
 import com.khajabad.app.ui.components.ToastPill
 import com.khajabad.app.ui.counter.CounterScreen
+import com.khajabad.app.ui.events.EventsScreen
+import com.khajabad.app.data.events.EventsState
 import com.khajabad.app.ui.drawer.KhajaDrawer
 import com.khajabad.app.ui.home.HomeScreen
 import com.khajabad.app.ui.library.LibraryScreen
@@ -64,6 +66,7 @@ fun KhajabadApp(vm: KhajabadViewModel = viewModel()) {
     val books by vm.books.collectAsStateWithLifecycle()
     val counter by vm.counter.collectAsStateWithLifecycle()
     val counterTarget by vm.counterTarget.collectAsStateWithLifecycle()
+    val events by vm.events.collectAsStateWithLifecycle()
     val route = vm.route
     val context = LocalContext.current
     val view = LocalView.current
@@ -127,6 +130,9 @@ fun KhajabadApp(vm: KhajabadViewModel = viewModel()) {
                                 if (category.bookId != null) vm.openBook(category.bookId)
                                 else vm.toast("“${category.label}” ഉടൻ വരുന്നു")
                             },
+                            events = events,
+                            onOpenEvents = { vm.navigate(Route.Events) },
+                            onRefreshEvents = { vm.refreshEvents(force = true) },
                         )
                     }
 
@@ -150,6 +156,16 @@ fun KhajabadApp(vm: KhajabadViewModel = viewModel()) {
                             onUndo = vm::undoCounter,
                             onReset = vm::resetCounter,
                             onTarget = vm::setCounterTarget,
+                        )
+                    }
+
+                    Route.Events -> Box(Modifier.fillMaxSize().statusBarsPadding()) {
+                        EventsScreen(
+                            state = events,
+                            configured = vm.eventsConfigured,
+                            onBack = { vm.back() },
+                            onRefresh = { vm.refreshEvents(force = true) },
+                            onShare = { text -> shareText(context, text) },
                         )
                     }
 
@@ -225,6 +241,13 @@ fun KhajabadApp(vm: KhajabadViewModel = viewModel()) {
                 dark = prefs.dark,
                 bookCount = books.size,
                 bookmarkCount = prefs.bookmarks.size,
+                eventSubtitle = when (val state = events) {
+                    is EventsState.Live -> state.next?.title?.take(28) ?: "${state.events.size} പരിപാടികൾ"
+                    is EventsState.Stale -> "${state.events.size} പരിപാടികൾ · ഓഫ്‌ലൈൻ"
+                    is EventsState.Loading -> "അപ്ഡേറ്റ് ചെയ്യുന്നു…"
+                    is EventsState.Failed -> "ലഭ്യമല്ല · റിട്രൈ ചെയ്യുക"
+                    EventsState.Idle -> "അടുത്ത പരിപാടികൾ"
+                },
                 onClose = { vm.setDrawer(false) },
                 onNavigate = { target ->
                     vm.setDrawer(false)
@@ -286,6 +309,14 @@ private fun displayName(context: Context, uri: Uri): String? {
         val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
         if (index >= 0 && it.moveToFirst()) it.getString(index) else null
     }
+}
+
+private fun shareText(context: Context, text: String) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    context.startActivity(Intent.createChooser(intent, "Share"))
 }
 
 private fun shareBook(context: Context, book: Book?) {

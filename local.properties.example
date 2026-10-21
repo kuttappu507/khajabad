@@ -1,0 +1,5 @@
+# Copy to local.properties and fill in. Never commit local.properties.
+# Events feed (the same function that powers the website).
+NOTTE_API_KEY=sk-notte-...
+NOTTE_FUNCTION_ID=635cfdc6-667e-453c-bc57-bce54f35724b
+NOTTE_BASE_URL=https://us-prod.notte.cc

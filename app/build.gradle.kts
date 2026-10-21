@@ -4,6 +4,22 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Events feed (Notte function powering the website). Configured through
+// local.properties or an environment variable so the key never lives in git.
+fun localOrEnv(key: String, fallback: String = ""): String {
+    System.getenv(key)?.takeIf { it.isNotBlank() }?.let { return it }
+    listOf("local.properties", "notte.properties").forEach { name ->
+        val props = java.io.File(rootProject.projectDir, name)
+        if (props.exists()) {
+            val value = java.util.Properties()
+                .apply { props.inputStream().use { load(it) } }
+                .getProperty(key)
+            if (!value.isNullOrBlank()) return value
+        }
+    }
+    return fallback
+}
+
 android {
     namespace = "com.khajabad.app"
     compileSdk = 35
@@ -12,9 +28,13 @@ android {
         applicationId = "com.khajabad.app"
         minSdk = 23
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.1.0"
         vectorDrawables { useSupportLibrary = true }
+
+        buildConfigField("String", "NOTTE_API_KEY", "\"" + localOrEnv("NOTTE_API_KEY") + "\"")
+        buildConfigField("String", "NOTTE_FUNCTION_ID", "\"" + localOrEnv("NOTTE_FUNCTION_ID", "635cfdc6-667e-453c-bc57-bce54f35724b") + "\"")
+        buildConfigField("String", "NOTTE_BASE_URL", "\"" + localOrEnv("NOTTE_BASE_URL", "https://us-prod.notte.cc") + "\"")
     }
 
     signingConfigs {
