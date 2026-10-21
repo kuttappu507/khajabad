@@ -6,6 +6,51 @@ on:
   workflow_dispatch:
 
 jobs:
+  jvm:
+    name: JVM launch test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run launch test
+        id: test
+        continue-on-error: true
+        run: |
+          chmod +x ./gradlew
+          ./gradlew testDebugUnitTest --console=plain --tests '*LaunchSmokeTest*' > test.log 2>&1
+      - name: Report JVM test
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os, re, glob, html
+          chunks = []
+          if os.path.exists('test.log'):
+              txt = open('test.log', errors='ignore').read()
+              # gradle prints the full stack trace for failed tests
+              start = txt.find('LaunchSmokeTest')
+              chunks.append(txt[-20000:])
+          for f in glob.glob('app/build/reports/tests/testDebugUnitTest/classes/*.html'):
+              body = open(f, errors='ignore').read()
+              pre = re.findall(r'<pre>(.*?)</pre>', body, re.S)
+              for p in pre[:3]:
+                  chunks.append(html.unescape(re.sub('<[^>]+>', '', p)))
+          for f in glob.glob('app/build/test-results/testDebugUnitTest/*.xml'):
+              body = open(f, errors='ignore').read()
+              for m in re.findall(r'<failure[^>]*>(.*?)</failure>', body, re.S):
+                  chunks.append(html.unescape(m))
+          report = '\n'.join(chunks)
+          lines = [l.rstrip() for l in report.splitlines() if l.strip()]
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as fh:
+              fh.write('## JVM launch test\n\n```\n' + report[:50000] + '\n```\n')
+          for line in lines[-40:]:
+              print('::error::' + line.replace('%', '%25').replace('\r', '')[:900])
+          PY
+          exit 1
+
   smoke:
     name: Boot app on emulator
     runs-on: ubuntu-latest
