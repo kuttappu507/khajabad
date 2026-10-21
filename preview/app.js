@@ -450,7 +450,7 @@ function vib(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
 
 /* ------------------------------------------------------------ counter */
 
-const RING_LEN = 2 * Math.PI * 115;
+const RING_LEN = 2 * Math.PI * 132;
 
 function renderCounter() {
   const target = state.target;

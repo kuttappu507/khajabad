@@ -11,6 +11,26 @@ A modern, offline PDF reader for Malayalam devotional books — built with **Kot
 
 ---
 
+## Screens
+
+<p align="center">
+  <img src="docs/screens/01-splash.jpg" width="220" alt="Splash" />
+  <img src="docs/screens/02-home.jpg" width="220" alt="Home" />
+  <img src="docs/screens/03-drawer.jpg" width="220" alt="Drawer" />
+</p>
+<p align="center">
+  <img src="docs/screens/04-library.jpg" width="220" alt="Library" />
+  <img src="docs/screens/05-reader.jpg" width="220" alt="Reader" />
+  <img src="docs/screens/06-reader-pages.jpg" width="220" alt="Page thumbnails" />
+</p>
+<p align="center">
+  <img src="docs/screens/07-counter.jpg" width="220" alt="Dhikr counter" />
+  <img src="docs/screens/08-search.jpg" width="220" alt="Search" />
+  <img src="docs/screens/10-home-dark.jpg" width="220" alt="Night mode" />
+</p>
+
+---
+
 ## Look at it first
 
 `preview/index.html` is a **fully interactive prototype** of the app (same palette, type, motion and the real book pages). Open it in a browser — no build step needed:
