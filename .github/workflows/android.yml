@@ -6,9 +6,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
-    name: Assemble debug APK
+    name: Build signed APK
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,10 +28,10 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Assemble debug
+      - name: Assemble release + debug
         id: assemble
         continue-on-error: true
-        run: ./gradlew assembleDebug --console=plain --stacktrace > build.log 2>&1
+        run: ./gradlew assembleRelease assembleDebug --console=plain --stacktrace > build.log 2>&1
 
       - name: Show compiler errors
         if: steps.assemble.outcome == 'failure'
@@ -50,10 +53,41 @@ jobs:
           PY
           exit 1
 
-      - name: Upload APK
+      - name: Check signing and manifest
+        if: steps.assemble.outcome == 'success'
+        run: |
+          APK=app/build/outputs/apk/release/app-release.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "==== apksigner ===="
+          "$BT/apksigner" verify --verbose --print-certs "$APK"
+          echo "==== badging ===="
+          "$BT/aapt2" dump badging "$APK" | head -20
+
+      - name: Rename for humans
+        if: steps.assemble.outcome == 'success'
+        run: |
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk out/khajabad.apk
+          ls -la out
+
+      - name: Upload APKs
         if: steps.assemble.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: khajabad-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: khajabad-apk
+          path: |
+            out/khajabad.apk
+            app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Direct .apk download (no zip) at releases/tag/latest
+      - name: Publish download
+        if: steps.assemble.outcome == 'success' && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view latest >/dev/null 2>&1 || \
+            gh release create latest --title "khajabad · latest build" \
+              --notes "Signed, installable APK. Download \`khajabad.apk\` below." --latest
+          gh release upload latest out/khajabad.apk --clobber
+          gh release edit latest --notes "Signed, installable APK (versionCode from this commit). If Android says \"App not installed\", uninstall any older khajabad copy first — it was signed with a different key." --latest

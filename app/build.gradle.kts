@@ -12,18 +12,35 @@ android {
         applicationId = "com.khajabad.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
         vectorDrawables { useSupportLibrary = true }
+    }
+
+    signingConfigs {
+        create("release") {
+            // Stable, committed signing key so every CI run installs over the previous one.
+            storeFile = file("keystore.p12")
+            storeType = "PKCS12"
+            storePassword = "khajabad"
+            keyAlias = "khajabad"
+            keyPassword = "khajabad"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            isShrinkResources = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            // Keep debug installs compatible with the same package name.
+            applicationIdSuffix = ""
         }
     }
 
