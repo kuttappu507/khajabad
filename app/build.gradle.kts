@@ -7,13 +7,17 @@ plugins {
 // Events feed (the Notte function powering the website).
 // Lookup order: env var > local.properties > notte.properties > fallback.
 fun localOrEnv(key: String, fallback: String = ""): String {
+    // Reading plain key=value files with the Kotlin stdlib keeps this script free
+    // of java.* references (the Kotlin DSL already binds `java` to an extension).
     System.getenv(key)?.takeIf { it.isNotBlank() }?.let { return it }
     listOf("local.properties", "notte.properties").forEach { name ->
-        val props = java.io.File(rootProject.projectDir, name)
-        if (props.exists()) {
-            val value = java.util.Properties().apply {
-                props.inputStream().use { stream -> this.load(stream) }
-            }.getProperty(key)
+        val file = rootProject.file(name)
+        if (file.exists()) {
+            val value = file.readLines()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("$key=") || it.startsWith("$key =") }
+                ?.substringAfter('=')
+                ?.trim()
             if (!value.isNullOrBlank()) return value
         }
     }
