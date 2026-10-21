@@ -129,13 +129,19 @@ class EventFeedTest {
 
     @Test
     fun parsesEventsEmbeddedInARunOutputString() {
-        val body = """
-            {"run_id":"r1","status":"completed",
-             "output":"Here is what I found:\n```json\n$eventsJson\n```"}
-        """.trimIndent()
+        val output = "Here is what I found:\n```json\n$eventsJson\n```"
+        val body = """{"run_id":"r1","status":"completed","output":${quote(output)}}"""
         val events = EventParser.parse(body)
         assertEquals(2, events.size)
         assertEquals("സ്വലാത്ത് ജൽസ", events[1].title)
+    }
+
+    /** Prose + a fence around the payload, i.e. what an LLM step actually returns. */
+    @Test
+    fun parsesFencedJsonSurroundedByProse() {
+        val body = "Here are the upcoming events:\n```json\n$eventsJson\n```\nLet me know!"
+        val events = EventParser.parse(body)
+        assertEquals(2, events.size)
     }
 
     @Test
