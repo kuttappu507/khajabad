@@ -5,6 +5,9 @@ on:
     branches: [ main, 'arena/**' ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   jvm:
     name: JVM launch test
@@ -50,6 +53,21 @@ jobs:
               print('::error::' + line.replace('%', '%25').replace('\r', '')[:900])
           PY
           exit 1
+
+      - name: Publish diagnostics
+        if: always()
+        run: |
+          set -e
+          mkdir -p docs/ci
+          [ -f test.log ] && cp test.log docs/ci/jvm-test.log || true
+          [ -f logcat.txt ] && grep -iE "FATAL|AndroidRuntime|Caused by|khajabad|Exception|System.err" logcat.txt | tail -400 > docs/ci/logcat.txt || true
+          [ -f shot.png ] && cp shot.png docs/ci/emulator.png || true
+          git config user.name "khajabad-ci"
+          git config user.email "ci@khajabad.app"
+          git add -f docs/ci
+          git commit -m "ci: diagnostics [skip ci]" || echo "nothing to publish"
+          git pull --rebase -q origin HEAD || true
+          git push -q origin HEAD || echo "push failed"
 
   smoke:
     name: Boot app on emulator
@@ -154,3 +172,17 @@ jobs:
             shot.png
           if-no-files-found: warn
           retention-days: 2
+      - name: Publish diagnostics
+        if: always()
+        run: |
+          set -e
+          mkdir -p docs/ci
+          [ -f test.log ] && cp test.log docs/ci/jvm-test.log || true
+          [ -f logcat.txt ] && grep -iE "FATAL|AndroidRuntime|Caused by|khajabad|Exception|System.err" logcat.txt | tail -400 > docs/ci/logcat.txt || true
+          [ -f shot.png ] && cp shot.png docs/ci/emulator.png || true
+          git config user.name "khajabad-ci"
+          git config user.email "ci@khajabad.app"
+          git add -f docs/ci
+          git commit -m "ci: diagnostics [skip ci]" || echo "nothing to publish"
+          git pull --rebase -q origin HEAD || true
+          git push -q origin HEAD || echo "push failed"
