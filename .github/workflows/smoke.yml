@@ -118,3 +118,15 @@ jobs:
             git pull --rebase origin ${GITHUB_REF_NAME} || true
             git push origin HEAD:${GITHUB_REF_NAME} && break || sleep 5
           done
+
+      - name: Fail if the app crashed
+        run: |
+          if [ ! -s logcat.txt ]; then
+            echo "no logcat captured — the emulator probably never booted" >&2
+            exit 1
+          fi
+          if grep -q "FATAL EXCEPTION" logcat.txt; then
+            echo "crash in logcat (see docs/ci/logcat.txt)" >&2
+            exit 1
+          fi
+          echo "no fatal exceptions"
