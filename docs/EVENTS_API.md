@@ -115,3 +115,21 @@ for a couple of minutes so a few hundred app refreshes don't hammer the source s
 
 The app declares only `INTERNET` + `ACCESS_NETWORK_STATE`, and they are used solely
 for this feed. No analytics, no identifiers sent, no background sync, no wake locks.
+
+## 6. When the feed looks wrong
+
+The sandbox that wrote this client could not reach `us-prod.notte.cc`, so the exact
+response shape has never been observed — the parser is deliberately tolerant, and
+everything below is verified against fixtures rather than the live function.
+
+- **Empty card, no error** → the run succeeded but the parser found no array. Open
+  Events → *raw response* toggle to see the untouched payload, then add the field
+  name to the alias tables in `data/events/Event.kt`.
+- **Card stuck on "offline"** → a stale cached payload is being shown; the state
+  chip says how old it is. Pull to refresh from the Events screen.
+- **Card says "not configured"** → `BuildConfig.NOTTE_API_KEY` is empty; see §4.
+- **Did the app itself break, or just the feed?** The `JVM launch test` job
+  (`smoke.yml`) renders the home screen headlessly on every push, so a red build
+  there means the UI broke — not the network. Its log lands in
+  [`docs/ci/jvm-test.log`](ci/README.md); the demo feed in `preview/` renders the
+  same components without any network at all.

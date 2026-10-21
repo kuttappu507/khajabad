@@ -6,14 +6,14 @@ A modern, offline PDF reader for Malayalam devotional books — built with **Kot
   <img alt="kotlin" src="https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?style=flat-square" />
   <img alt="compose" src="https://img.shields.io/badge/Compose-1.7-4285F4?style=flat-square" />
   <img alt="material" src="https://img.shields.io/badge/Material-none-1BA98A?style=flat-square" />
-  <img alt="minSdk" src="https://img.shields.io/badge/minSdk-24-0B1E33?style=flat-square" />
+  <img alt="minSdk" src="https://img.shields.io/badge/minSdk-23-0B1E33?style=flat-square" />
 </p>
 
 ---
 
 ## Install
 
-<a href="https://github.com/kuttappu507/khajabad/releases/download/latest/khajabad.apk"><b>⬇ Download khajabad.apk</b></a> — signed release build, Android 7.0+, ~16 MB, fully offline.
+<a href="https://github.com/kuttappu507/khajabad/releases/download/latest/khajabad.apk"><b>⬇ Download khajabad.apk</b></a> — signed release build (v1.1.1), Android 6.0+, ~16 MB. The books are fully offline; the optional events feed is the only thing that touches the network.
 
 Trouble installing ("App not installed")? See **[docs/INSTALL.md](docs/INSTALL.md)** — it is almost always an old copy signed with a different key, or the CI *zip* being installed instead of the `.apk`.
 
@@ -140,7 +140,7 @@ app/src/main/java/com/khajabad/app/
 ```
 
 - **Rendering** — pages are rasterised with the platform `android.graphics.pdf.PdfRenderer` at the size actually needed (thumbnail ↔ full screen), cached by byte budget, prefetched one page either side, and drawn with Compose `Image`.
-- **Persistence** — Preferences DataStore only; no database, no network permission, no analytics.
+- **Persistence** — Preferences DataStore only; no database, no analytics. The single network call is the notte events feed (`INTERNET`), and it degrades to the cache when offline.
 
 ---
 
@@ -173,9 +173,53 @@ Or just tap **PDF ചേർക്കുക** in the library at runtime.
 
 - The reader rasterises pages, so text selection/copy inside a page isn't available (fine for calligraphy-heavy devotional books). Everything else — bookmarks, progress, thumbnails — is app-level.
 - `minSdk 23`; night mode and the app's own palette are independent of the system.
-- The Android sources were written in an environment without an Android SDK, so they have not been compiled here — run `./gradlew assembleDebug` (or the bundled CI workflow) to produce the APK. The interactive `preview/` prototype is self-contained and needs no build.
+- There is no Android SDK in the authoring environment, so every build and every test listed below runs on GitHub Actions; the interactive `preview/` prototype is self-contained and needs no build.
 
-## Ideas for v1.1
+## Testing
+
+Two workflows guard the release:
+
+| Workflow | Trigger | What it proves |
+|---|---|---|
+| `android.yml` | every push | `assembleRelease` + `assembleDebug`, then `apksigner verify --print-certs` and `aapt2 dump badging`, and re-uploads `khajabad.apk` to the `latest` release. |
+| `smoke.yml` → **JVM launch test** | every push | `LaunchSmokeTest` boots the real Compose app under Robolectric (sdk 30, `w411dp-h891dp-xxhdpi`, native graphics) and asserts six things: splash settles into home, both bundled books are listed, the drawer lists its destinations, the home list scrolls to *Next events* and *Browse*, the tab bar reaches the counter, and search opens. |
+| `smoke.yml` → **Boot app on emulator (manual)** | `workflow_dispatch` only | Installs the APK on an API 30 emulator, launches it, screenshots it and greps logcat. |
+
+When a run goes red the JVM job commits its Gradle output to
+[`docs/ci/jvm-test.log`](docs/ci/README.md) and the emulator job commits
+`docs/ci/logcat.txt` + `docs/ci/emulator.png`, so the failure can be read straight
+from the branch — Actions artifact downloads are not reachable from every
+environment. Those files are force-added because `*.log` is gitignored, and the
+commit is tagged `[skip ci]`. A green JVM run deletes the old log again.
+
+### The launch crash, and why the fonts are checked
+
+v1.0.0 built, installed and then died immediately on landing. The JVM launch test
+reproduced it in seconds:
+
+```
+android.content.res.Resources$NotFoundException: Font resource ID #0x7f0f0000 could not be retrieved.
+  at androidx.compose.ui.text.font.FontFamilyResolver … FontFamilyResolver.kt:207
+```
+
+Every file in `res/font/` was **WOFF2** (`wOF2` magic bytes) even though it was
+named `.ttf`: the weights had been static-instanced from Fontsource's `.woff2`
+files and saved with that flavour intact. Compose happily resolves the resource
+ID, then the platform font loader rejects the container while building the splash
+text. The fix is one line in the conversion script —
+
+```python
+inst.flavor = None        # write real TrueType, not woff2
+inst.flavorData = None
+```
+
+— plus an assertion that each file starts with `\x00\x01\x00\x00`. If you ever
+re-generate or swap a font, verify the magic bytes before shipping: an Android
+build will not tell you.
+
+---
+
+## Ideas for v2
 
 - Page‑curl that follows the finger with a real mesh
 - Audio recitation per page, timed to the text

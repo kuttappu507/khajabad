@@ -22,7 +22,7 @@ adb install -r khajabad.apk
 3. If Play Protect shows a "scan" dialog, choose **Install anyway** / **More details → Install anyway**.
 4. The app is called **khajabad**, cream icon with a mint mihrab arch.
 
-Requires **Android 7.0 (API 24)** or newer. No internet permission, no account, no ads.
+Requires **Android 6.0 (API 23)** or newer. No account, no ads; the books work fully offline.
 
 ## "App not installed" — what actually causes it
 
@@ -32,7 +32,7 @@ Requires **Android 7.0 (API 24)** or newer. No internet permission, no account, 
 | **An older khajabad is installed with a different signature** (e.g. an earlier debug build) | Settings → Apps → khajabad → **Uninstall**, then install again. In a terminal: `adb uninstall com.khajabad.app`. |
 | **Play Protect / OEM security blocking the file** | Open the file, tap **More details → Install anyway**. On MIUI/Realme: Settings → Privacy → *Install unknown apps* off for the source, or turn off "Security scan" for that install. |
 | **Download was truncated** (size should be ≈16 MB) | Re-download on a stable connection, or use `curl -L` / `adb install`. |
-| **Android version below 7.0** | The app needs API 24+. |
+| **Android version below 6.0** | The app needs API 23+. |
 | **Free storage below ~40 MB** | Free some space; the installer needs room for the APK *and* the unpacked copy. |
 
 Anything else? Get the real error code with:
@@ -41,7 +41,7 @@ Anything else? Get the real error code with:
 adb install -r khajabad.apk
 # e.g. INSTALL_FAILED_UPDATE_INCOMPATIBLE  → uninstall the old copy
 #      INSTALL_PARSE_FAILED_NO_CERTIFICATES → corrupt download
-#      INSTALL_FAILED_OLDER_SDK             → Android < 7.0
+#      INSTALL_FAILED_OLDER_SDK             → Android < 6.0
 ```
 
 ## Build it yourself
