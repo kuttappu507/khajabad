@@ -333,7 +333,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round
   100% { opacity: 1; transform: none; }
 }
 .splash-sub {
-  margin-top: 8px; font-size: 16px; line-height: 1.7; letter-spacing: 2px; color: var(--ink-soft);
+  margin-top: 10px; font-size: 14px; line-height: 1.7; letter-spacing: 1.2px; color: var(--ink-soft);
   opacity: 0; animation: fadeUp 0.6s var(--snap) 0.9s forwards;
 }
 .splash-kicker {
@@ -355,8 +355,8 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round
 
 /* ------------------------------------------------------------ home */
 
-.hero { position: relative; height: 282px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.hero-mark { position: relative; width: 190px; height: 190px; display: grid; place-items: center; }
+.hero { position: relative; height: 272px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hero-mark { position: relative; width: 182px; height: 182px; display: grid; place-items: center; }
 .hero-orbit { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--mint-deep); overflow: visible; }
 .orbit {
   fill: none; stroke: var(--mint-deep); stroke-width: 1.1; opacity: 0.35;
@@ -394,7 +394,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round
 .chip:hover { filter: brightness(1.03); }
 
 .featured {
-  position: relative; margin: 0 22px; height: 102px; border-radius: 32px;
+  position: relative; margin: 6px 22px 0; height: 102px; border-radius: 32px;
   background: var(--mint);
   background: linear-gradient(120deg, var(--mint), color-mix(in srgb, var(--mint) 84%, var(--mint-deep)));
   display: flex; align-items: center; gap: 16px; padding: 0 18px;
@@ -427,7 +427,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round
 }
 
 .kicker {
-  padding: 26px 22px 14px;
+  padding: 24px 22px 16px;
   font-size: 10.5px; font-weight: 600; letter-spacing: 2.2px;
   color: var(--ink-soft); text-transform: uppercase;
 }

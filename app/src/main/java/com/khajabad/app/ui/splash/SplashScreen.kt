@@ -234,7 +234,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                 label = "sub",
             )
             BasicText(
-                text = "ഖജാബാദ്",
+                text = "ഓഫ്‍ലൈൻ പുസ്തകശാല",
                 style = Type.MalLabel.copy(
                     color = colors.inkSoft,
                     fontSize = 16.sp,

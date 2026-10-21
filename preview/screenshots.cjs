@@ -77,13 +77,6 @@ fs.mkdirSync(OUT, { recursive: true });
   await shot('10-home-dark');
   await page.evaluate(() => document.documentElement.classList.remove('dark'));
 
-  // font diagnostics
-  const diag = await browser.newPage({ viewport: { width: 420, height: 420 }, deviceScaleFactor: 2 });
-  await diag.goto('http://127.0.0.1:8080/font-test.html', { waitUntil: 'networkidle' });
-  await diag.waitForTimeout(400);
-  await diag.screenshot({ path: path.join(OUT, 'zz-font-test.jpg'), type: 'jpeg', quality: 92 });
-  await diag.close();
-
   await browser.close();
   console.log('screenshots written to', OUT);
 })();
