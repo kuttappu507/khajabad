@@ -37,5 +37,17 @@ jobs:
           git config user.name "khajabad-bot"
           git config user.email "bot@khajabad.app"
           git add docs/screens
-          git commit -m "docs: refresh UI screenshots" || echo "nothing to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "screenshots unchanged"
+            exit 0
+          fi
+          git commit -m "docs: refresh UI screenshots [skip ci]"
+          # A human push may land while the browser is capturing; rebase and retry
+          # instead of failing the workflow.
+          for i in 1 2 3 4 5; do
+            if git push; then exit 0; fi
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            sleep $((i * 4))
+          done
+          echo "could not push screenshots after 5 attempts" >&2
+          exit 1
