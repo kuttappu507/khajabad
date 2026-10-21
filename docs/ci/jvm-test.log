@@ -26,9 +26,9 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:parseDebugLocalResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
-> Task :app:preDebugUnitTestBuild UP-TO-DATE
 > Task :app:processDebugManifestForPackage
 > Task :app:javaPreCompileDebug
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
 > Task :app:javaPreCompileDebugUnitTest FROM-CACHE
 > Task :app:mergeDebugShaders
 > Task :app:compileDebugShaders NO-SOURCE
@@ -39,55 +39,55 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:generateDebugUnitTestConfig
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:bundleDebugClassesToCompileJar
 > Task :app:bundleDebugClassesToRuntimeJar
 > Task :app:processDebugJavaRes
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
 
-> Task :app:compileDebugUnitTestKotlin FAILED
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:4:12 Unresolved reference 'sun'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:5:12 Unresolved reference 'sun'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:28:34 Unresolved reference 'HttpServer'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:34:18 Unresolved reference 'HttpServer'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:34:74 Cannot infer type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:34:80 Cannot infer type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:35:13 Unresolved reference 'executor'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:36:13 Unresolved reference 'createContext'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:36:34 Cannot infer type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:37:13 Unresolved reference 'start'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:39:23 Unresolved reference 'address'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:44:16 Unresolved reference 'stop'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:48:25 Unresolved reference 'HttpExchange'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:48:51 Unresolved reference 'HttpExchange'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:50:34 Unresolved reference 'HttpExchange'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:52:33 Unresolved reference 'requestMethod'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:52:59 Unresolved reference 'requestURI'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:57:35 Unresolved reference 'HttpExchange'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:59:18 Unresolved reference 'responseHeaders'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:60:18 Unresolved reference 'sendResponseHeaders'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:61:18 Unresolved reference 'responseBody'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:61:31 Cannot infer type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:61:35 Cannot infer type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:61:40 Unresolved reference 'write'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:109:19 Unresolved reference 'HttpExchange'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:110:33 Unresolved reference 'requestURI'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:114:52 Unresolved reference 'requestMethod'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:136:19 Unresolved reference 'HttpExchange'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:137:33 Unresolved reference 'requestHeaders'.
-e: file:///home/runner/work/khajabad/khajabad/app/src/test/java/com/khajabad/app/data/events/EventFeedTest.kt:151:19 Unresolved reference 'HttpExchange'.
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792562023693.json
+> Task :app:testDebugUnitTest
+
+LaunchSmokeTest > tabBarNavigatesToSearch PASSED
+
+LaunchSmokeTest > readerOpensAsContinuousScroll PASSED
+
+LaunchSmokeTest > tabBarNavigatesToCounter PASSED
+
+LaunchSmokeTest > scrollReachesNextEvents PASSED
+
+LaunchSmokeTest > homeShowsBothBundledBooks PASSED
+
+LaunchSmokeTest > drawerOpensAndListsDestinations PASSED
+
+LaunchSmokeTest > splashTransitionRendersHome PASSED
+
+EventFeedTest > ignoresNonEventJson PASSED
+
+EventFeedTest > fallsBackThroughEndpointsUntilEventsArrive PASSED
+
+EventFeedTest > reportsEveryAttemptWhenNothingWorks PASSED
+
+EventFeedTest > parsesPlainEventArray PASSED
+
+EventFeedTest > parsesEventsEmbeddedInARunOutputString FAILED
+    java.lang.AssertionError at EventFeedTest.kt:137
+
+EventFeedTest > retriesWithoutBearerWhenRejected PASSED
+
+13 tests completed, 1 failed
+
+> Task :app:testDebugUnitTest FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792562178190.json
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:compileDebugUnitTestKotlin'.
-> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
-   > Compilation error. See log for more details
+Execution failed for task ':app:testDebugUnitTest'.
+> There were failing tests. See the report at: file:///home/runner/work/khajabad/khajabad/app/build/reports/tests/testDebugUnitTest/index.html
 
 * Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
 > Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
 
-BUILD FAILED in 1m 49s
-26 actionable tasks: 25 executed, 1 from cache
+BUILD FAILED in 2m 17s
+28 actionable tasks: 27 executed, 1 from cache
