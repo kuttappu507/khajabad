@@ -28,7 +28,7 @@ object PdfPages {
     private val lock = Mutex()
 
     /** Byte-budgeted page cache so a few full-screen pages never blow the heap. */
-    private val cache = object : LruCache<String, ImageBitmap>(26 * 1024 * 1024) {
+    private val cache = object : LruCache<String, ImageBitmap>(32 * 1024 * 1024) {
         override fun sizeOf(key: String, value: ImageBitmap): Int = value.width * value.height * 4
     }
     private val handles = HashMap<String, Handle>()
