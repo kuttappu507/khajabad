@@ -389,7 +389,18 @@ function updateReader(rebuildSheet) {
   $('#scrubFill').style.width = `${((page) / (book.pages - 1)) * 100}%`;
   $('#scrubThumb').style.left = `calc(${((page) / (book.pages - 1)) * 100}% - 7px)`;
   $('#pageImg').src = pageSrc(book, page);
-  $('#pageCard').style.aspectRatio = book.slug === 'shajarath' ? '298 / 417' : '760 / 909';
+  const ratio = book.slug === 'shajarath' ? '298 / 417' : '760 / 909';
+  $('#pageCard').style.aspectRatio = ratio;
+  // Continuous-document feel: let the following page peek in below.
+  const nextCard = $('#nextCard');
+  if (nextCard) {
+    const hasNext = page + 1 < book.pages;
+    nextCard.style.display = hasNext ? 'block' : 'none';
+    nextCard.style.aspectRatio = ratio;
+    if (hasNext) $('#nextImg').src = pageSrc(book, page + 1);
+  }
+  const stage = $('#pageStage');
+  if (stage) stage.scrollTop = 0;
 
   const marked = state.bookmarks.has(bmKey(book.id, page));
   $('#bookmarkBtn').classList.toggle('on', marked);

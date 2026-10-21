@@ -362,7 +362,7 @@ private fun BookRow(book: Book, page: Int, onClick: () -> Unit, modifier: Modifi
             )
             Spacer(Modifier.height(3.dp))
             BasicText(
-                text = "${book.latin} · ${book.pages} പേജ്",
+                text = "${book.latin} · ${book.pages} പേജ് · PDF",
                 style = Type.Small.copy(color = colors.textSoft, fontSize = 10.5.sp),
                 maxLines = 1,
             )
