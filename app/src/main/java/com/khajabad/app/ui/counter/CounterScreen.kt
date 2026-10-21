@@ -109,7 +109,8 @@ fun CounterScreen(
                     .height(304.dp),
             ) {
                 // expanding ripples
-                ripples.toList().forEach { key ->
+                val activeRipples = ripples.toList()
+                for (key in activeRipples) {
                     TapRipple(
                         key = key,
                         color = colors.mint,

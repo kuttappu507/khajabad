@@ -246,6 +246,7 @@ fun SectionHeader(
 
 @Composable
 fun ShimmerBox(modifier: Modifier = Modifier, shape: RoundedCornerShape = RoundedCornerShape(24.dp)) {
+    val colors = Khaja.colors
     val transition = rememberInfiniteTransition(label = "shimmer")
     val shift by transition.animateFloat(
         initialValue = -1f,
@@ -259,7 +260,7 @@ fun ShimmerBox(modifier: Modifier = Modifier, shape: RoundedCornerShape = Rounde
     Box(
         modifier
             .clip(shape)
-            .background(Khaja.colors.paperAlt)
+            .background(colors.paperAlt)
             .drawWithContent {
                 drawContent()
                 val w = size.width
@@ -268,7 +269,7 @@ fun ShimmerBox(modifier: Modifier = Modifier, shape: RoundedCornerShape = Rounde
                     brush = Brush.linearGradient(
                         colors = listOf(
                             Color.Transparent,
-                            Khaja.colors.card.copy(alpha = 0.9f),
+                            colors.card.copy(alpha = 0.9f),
                             Color.Transparent,
                         ),
                         start = Offset(start, 0f),
