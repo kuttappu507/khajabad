@@ -103,10 +103,10 @@ fun CounterScreen(
 
         Revealed(index = 0) {
             Box(
-                contentAlignment = Alignment.Center,
-                Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .height(304.dp),
+                contentAlignment = Alignment.Center,
             ) {
                 // expanding ripples
                 val activeRipples = ripples.toList()

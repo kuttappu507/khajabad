@@ -65,23 +65,23 @@ object KhIcons {
 
     val Heart = lineIcon("heart") {
         moveTo(12f, 20.5f)
-        cubicTo(8.6f, 17.9f, 3f, 13.9f, 3f, 9.4f)
-        cubicTo(3f, 6.6f, 5.1f, 4.5f, 7.8f, 4.5f)
-        cubicTo(9.6f, 4.5f, 11.2f, 5.5f, 12f, 7f)
-        cubicTo(12.8f, 5.5f, 14.4f, 4.5f, 16.2f, 4.5f)
-        cubicTo(18.9f, 4.5f, 21f, 6.6f, 21f, 9.4f)
-        cubicTo(21f, 13.9f, 15.4f, 17.9f, 12f, 20.5f)
+        curveTo(8.6f, 17.9f, 3f, 13.9f, 3f, 9.4f)
+        curveTo(3f, 6.6f, 5.1f, 4.5f, 7.8f, 4.5f)
+        curveTo(9.6f, 4.5f, 11.2f, 5.5f, 12f, 7f)
+        curveTo(12.8f, 5.5f, 14.4f, 4.5f, 16.2f, 4.5f)
+        curveTo(18.9f, 4.5f, 21f, 6.6f, 21f, 9.4f)
+        curveTo(21f, 13.9f, 15.4f, 17.9f, 12f, 20.5f)
         close()
     }
 
     val HeartFull = fillIcon("heart_full") {
         moveTo(12f, 20.5f)
-        cubicTo(8.6f, 17.9f, 3f, 13.9f, 3f, 9.4f)
-        cubicTo(3f, 6.6f, 5.1f, 4.5f, 7.8f, 4.5f)
-        cubicTo(9.6f, 4.5f, 11.2f, 5.5f, 12f, 7f)
-        cubicTo(12.8f, 5.5f, 14.4f, 4.5f, 16.2f, 4.5f)
-        cubicTo(18.9f, 4.5f, 21f, 6.6f, 21f, 9.4f)
-        cubicTo(21f, 13.9f, 15.4f, 17.9f, 12f, 20.5f)
+        curveTo(8.6f, 17.9f, 3f, 13.9f, 3f, 9.4f)
+        curveTo(3f, 6.6f, 5.1f, 4.5f, 7.8f, 4.5f)
+        curveTo(9.6f, 4.5f, 11.2f, 5.5f, 12f, 7f)
+        curveTo(12.8f, 5.5f, 14.4f, 4.5f, 16.2f, 4.5f)
+        curveTo(18.9f, 4.5f, 21f, 6.6f, 21f, 9.4f)
+        curveTo(21f, 13.9f, 15.4f, 17.9f, 12f, 20.5f)
         close()
     }
 
@@ -120,11 +120,11 @@ object KhIcons {
 
     val Book = lineIcon("book") {
         moveTo(3f, 6.2f)
-        cubicTo(6.5f, 4.6f, 9.5f, 5f, 12f, 6.8f)
-        cubicTo(14.5f, 5f, 17.5f, 4.6f, 21f, 6.2f)
+        curveTo(6.5f, 4.6f, 9.5f, 5f, 12f, 6.8f)
+        curveTo(14.5f, 5f, 17.5f, 4.6f, 21f, 6.2f)
         lineTo(21f, 18.6f)
-        cubicTo(17.5f, 17f, 14.5f, 17.4f, 12f, 19.2f)
-        cubicTo(9.5f, 17.4f, 6.5f, 17f, 3f, 18.6f)
+        curveTo(17.5f, 17f, 14.5f, 17.4f, 12f, 19.2f)
+        curveTo(9.5f, 17.4f, 6.5f, 17f, 3f, 18.6f)
         close()
         moveTo(12f, 6.8f); lineTo(12f, 19.2f)
     }
@@ -154,11 +154,11 @@ object KhIcons {
 
     val Moon = fillIcon("moon") {
         moveTo(20.4f, 14.2f)
-        cubicTo(18.9f, 18.9f, 14.1f, 21.6f, 9.4f, 20.1f)
-        cubicTo(4.7f, 18.6f, 2f, 13.8f, 3.5f, 9.1f)
-        cubicTo(4.7f, 5.4f, 8f, 3.1f, 11.6f, 3f)
-        cubicTo(9.4f, 5.4f, 8.8f, 8.9f, 10.2f, 12f)
-        cubicTo(11.6f, 15.1f, 14.9f, 16.9f, 18.4f, 16.5f)
+        curveTo(18.9f, 18.9f, 14.1f, 21.6f, 9.4f, 20.1f)
+        curveTo(4.7f, 18.6f, 2f, 13.8f, 3.5f, 9.1f)
+        curveTo(4.7f, 5.4f, 8f, 3.1f, 11.6f, 3f)
+        curveTo(9.4f, 5.4f, 8.8f, 8.9f, 10.2f, 12f)
+        curveTo(11.6f, 15.1f, 14.9f, 16.9f, 18.4f, 16.5f)
         close()
     }
 
@@ -181,10 +181,10 @@ object KhIcons {
 
     val Sparkle = fillIcon("sparkle") {
         moveTo(12f, 2.6f)
-        cubicTo(12.9f, 8.1f, 15.9f, 11.1f, 21.4f, 12f)
-        cubicTo(15.9f, 12.9f, 12.9f, 15.9f, 12f, 21.4f)
-        cubicTo(11.1f, 15.9f, 8.1f, 12.9f, 2.6f, 12f)
-        cubicTo(8.1f, 11.1f, 11.1f, 8.1f, 12f, 2.6f)
+        curveTo(12.9f, 8.1f, 15.9f, 11.1f, 21.4f, 12f)
+        curveTo(15.9f, 12.9f, 12.9f, 15.9f, 12f, 21.4f)
+        curveTo(11.1f, 15.9f, 8.1f, 12.9f, 2.6f, 12f)
+        curveTo(8.1f, 11.1f, 11.1f, 8.1f, 12f, 2.6f)
         close()
     }
 
@@ -194,33 +194,33 @@ object KhIcons {
         moveTo(12f, 2.6f); lineTo(12f, 4.6f)
         moveTo(4.6f, 20.4f); lineTo(19.4f, 20.4f)
         moveTo(6.4f, 20.4f); lineTo(6.4f, 13.6f)
-        cubicTo(6.4f, 9.4f, 9.2f, 6.6f, 12f, 6.6f)
-        cubicTo(14.8f, 6.6f, 17.6f, 9.4f, 17.6f, 13.6f)
+        curveTo(6.4f, 9.4f, 9.2f, 6.6f, 12f, 6.6f)
+        curveTo(14.8f, 6.6f, 17.6f, 9.4f, 17.6f, 13.6f)
         lineTo(17.6f, 20.4f)
         moveTo(10f, 20.4f); lineTo(10f, 16.6f)
-        cubicTo(10f, 15.2f, 10.9f, 14.2f, 12f, 14.2f)
-        cubicTo(13.1f, 14.2f, 14f, 15.2f, 14f, 16.6f)
+        curveTo(10f, 15.2f, 10.9f, 14.2f, 12f, 14.2f)
+        curveTo(13.1f, 14.2f, 14f, 15.2f, 14f, 16.6f)
         lineTo(14f, 20.4f)
     }
 
     val Mihrab = lineIcon("mihrab") {
         moveTo(5.4f, 20.6f); lineTo(5.4f, 11.2f)
-        cubicTo(5.4f, 7.4f, 8.3f, 4.6f, 12f, 4.6f)
-        cubicTo(15.7f, 4.6f, 18.6f, 7.4f, 18.6f, 11.2f)
+        curveTo(5.4f, 7.4f, 8.3f, 4.6f, 12f, 4.6f)
+        curveTo(15.7f, 4.6f, 18.6f, 7.4f, 18.6f, 11.2f)
         lineTo(18.6f, 20.6f)
         moveTo(8.6f, 20.6f); lineTo(8.6f, 11.6f)
-        cubicTo(8.6f, 9.3f, 10.1f, 7.7f, 12f, 7.7f)
-        cubicTo(13.9f, 7.7f, 15.4f, 9.3f, 15.4f, 11.6f)
+        curveTo(8.6f, 9.3f, 10.1f, 7.7f, 12f, 7.7f)
+        curveTo(13.9f, 7.7f, 15.4f, 9.3f, 15.4f, 11.6f)
         lineTo(15.4f, 20.6f)
         moveTo(3.4f, 20.6f); lineTo(20.6f, 20.6f)
     }
 
     val Hands = lineIcon("hands") {
         moveTo(4.2f, 20.6f); lineTo(4.2f, 10.6f)
-        cubicTo(4.2f, 9.1f, 5.6f, 8.1f, 7f, 8.8f)
+        curveTo(4.2f, 9.1f, 5.6f, 8.1f, 7f, 8.8f)
         lineTo(9.5f, 10.3f); lineTo(9.5f, 20.6f)
         moveTo(19.8f, 20.6f); lineTo(19.8f, 10.6f)
-        cubicTo(19.8f, 9.1f, 18.4f, 8.1f, 17f, 8.8f)
+        curveTo(19.8f, 9.1f, 18.4f, 8.1f, 17f, 8.8f)
         lineTo(14.5f, 10.3f); lineTo(14.5f, 20.6f)
         moveTo(4.2f, 14.4f); lineTo(9.5f, 14.4f)
         moveTo(19.8f, 14.4f); lineTo(14.5f, 14.4f)
