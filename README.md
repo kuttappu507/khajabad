@@ -215,7 +215,7 @@ Three workflows guard the release:
 | Workflow | Trigger | What it proves |
 |---|---|---|
 | `android.yml` | every push | `assembleRelease` + `assembleDebug`, then `apksigner verify --print-certs` and `aapt2 dump badging`, and re-uploads `khajabad.apk` to the `latest` release. |
-| `smoke.yml` → **JVM launch test** | every push | `LaunchSmokeTest` boots the real Compose app under Robolectric (sdk 30, `w411dp-h891dp-xxhdpi`, native graphics) and asserts six things: splash settles into home, both bundled books are listed, the drawer lists its destinations, the home list scrolls to *Next events* and *Browse*, the tab bar reaches the counter, and search opens. Green on `1.1.1`. |
+| `smoke.yml` → **JVM launch test** | every push | `LaunchSmokeTest` boots the real Compose app under Robolectric (sdk 30, `w411dp-h891dp-xxhdpi`, native graphics) and asserts seven things: splash settles into home, both bundled books are listed, the drawer lists its destinations, the home list scrolls to *Next events*, the reader opens as a continuous scroll, the tab bar reaches the counter, and search opens. `EventFeedTest` additionally drives the events client against a local socket server (direct arrays, `output`-as-JSON-string, async runs, 401 → retry without bearer, full failure trace). Green on `1.2.0`. |
 | `smoke.yml` → **Boot app on emulator (manual)** | Actions → *Smoke test* → *Run workflow* | Installs the APK on an API 30 emulator, launches it, screenshots it, and fails the job if logcat contains a `FATAL EXCEPTION`. |
 
 When a run goes red the JVM job commits its Gradle output to
