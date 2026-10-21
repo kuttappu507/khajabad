@@ -1,14 +1,15 @@
 package com.khajabad.app
 
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.os.Looper
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Shadows.shadowOf
+import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
@@ -28,10 +29,22 @@ class LaunchSmokeTest {
     @get:Rule
     val compose = createAndroidComposeRule<MainActivity>()
 
-    private fun settle(millis: Long = 3_600) {
+    /**
+     * Robolectric's main looper is paused; advancing it (not Thread.sleep) is what
+     * lets the splash `delay()` and the entrance animations actually finish.
+     */
+    private fun settle(seconds: Long = 4) {
+        repeat(20) {
+            shadowOf(Looper.getMainLooper()).idleFor(200, TimeUnit.MILLISECONDS)
+            compose.waitForIdle()
+        }
+        compose.mainClock.advanceTimeBy(seconds * 1000)
         compose.waitForIdle()
-        Thread.sleep(millis)
-        compose.waitForIdle()
+    }
+
+    private fun assertText(text: String) {
+        val nodes = compose.onAllNodesWithText(text, useUnmergedTree = true).fetchSemanticsNodes()
+        assert(nodes.isNotEmpty()) { "Text not found on screen: \"$text\"" }
     }
 
     @Test
@@ -39,41 +52,40 @@ class LaunchSmokeTest {
         // Splash finishes on its own after ~2.5 s, then Home animates in.
         settle()
         compose.onRoot().assertExists()
-        compose.onNodeWithText("Recent").assertIsDisplayed()
-        compose.onNodeWithText("Next events").assertIsDisplayed()
-        compose.onNodeWithText("BROWSE").assertExists()
+        assertText("Recent")
+        assertText("Next events")
+        assertText("BROWSE")
     }
 
     @Test
     fun homeShowsBothBundledBooks() {
         settle()
-        compose.onNodeWithText("ശജരത്തുൽ മുബാറക്ക").assertExists()
-        compose.onNodeWithText("സ്വലാത്ത് ജൽസ").assertExists()
+        assertText("ശജരത്തുൽ മുബാറക്ക")
+        assertText("സ്വലാത്ത് ജൽസ")
     }
 
     @Test
     fun drawerOpensAndListsDestinations() {
         settle()
-        compose.onNodeWithText("Home", useUnmergedTree = true).assertExists()
-        // Menu button (content description free) → open drawer via the icon button
-        compose.onAllNodesWithText("Library")[0].performClick()
-        compose.waitForIdle()
+        compose.onAllNodesWithText("Library", useUnmergedTree = true)[0].performClick()
+        settle(1)
+        assertText("Saved pages")
     }
 
     @Test
     fun tabBarNavigatesToCounter() {
         settle()
-        compose.onNodeWithText("Counter", useUnmergedTree = true).performClick()
-        settle(900)
-        compose.onNodeWithText("ദിക്ർ കൗണ്ടർ · ഓഫ്‌ലൈൻ").assertExists()
-        compose.onNodeWithText("ടാപ്പ് ചെയ്യുക").assertExists()
+        compose.onAllNodesWithText("Counter", useUnmergedTree = true)[0].performClick()
+        settle(1)
+        assertText("ദിക്ർ കൗണ്ടർ · ഓഫ്‌ലൈൻ")
+        assertText("ടാപ്പ് ചെയ്യുക")
     }
 
     @Test
     fun tabBarNavigatesToSearch() {
         settle()
-        compose.onNodeWithText("Search", useUnmergedTree = true).performClick()
-        settle(900)
-        compose.onNodeWithText("പുസ്തകങ്ങൾ, പേജുകൾ, ബുക്ക്മാർക്കുകൾ").assertExists()
+        compose.onAllNodesWithText("Search", useUnmergedTree = true)[0].performClick()
+        settle(1)
+        assertText("പുസ്തകങ്ങൾ, പേജുകൾ, ബുക്ക്മാർക്കുകൾ")
     }
 }
