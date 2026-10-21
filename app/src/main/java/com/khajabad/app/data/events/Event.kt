@@ -30,19 +30,34 @@ data class Event(
 }
 
 sealed interface EventsState {
-    data object Idle : EventsState
-    data object Loading : EventsState
-    data class Live(val events: List<Event>, val fetchedAt: Long) : EventsState
-    data class Stale(val events: List<Event>, val fetchedAt: Long, val error: String) : EventsState
-    data class Failed(val error: String) : EventsState
 
     val events: List<Event>
-        get() = when (this) {
-            is Live -> events
-            is Stale -> events
-            else -> emptyList()
-        }
 
+    data object Idle : EventsState {
+        override val events: List<Event> get() = emptyList()
+    }
+
+    data object Loading : EventsState {
+        override val events: List<Event> get() = emptyList()
+    }
+
+    data class Live(
+        override val events: List<Event>,
+        val fetchedAt: Long,
+    ) : EventsState
+
+    /** Cached payload shown while the network is unavailable. */
+    data class Stale(
+        override val events: List<Event>,
+        val fetchedAt: Long,
+        val error: String,
+    ) : EventsState
+
+    data class Failed(val error: String) : EventsState {
+        override val events: List<Event> get() = emptyList()
+    }
+
+    /** First event that has not started yet (falls back to the first row). */
     val next: Event?
         get() = events.firstOrNull { it.start == null || it.start >= System.currentTimeMillis() }
             ?: events.firstOrNull()
