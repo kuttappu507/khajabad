@@ -22,18 +22,41 @@ Content-Type: application/json
 
 Implementation: `app/src/main/java/com/khajabad/app/data/events/EventApi.kt`
 
+That request is the *first rung* of a ladder, not the only bet. The exact REST shape
+of a Notte function was never observable from the build environment, so the client
+tries these in order and stops at the first one that yields events:
+
+| # | Request | Body |
+|---|---|---|
+| 1 | `POST /functions/{id}/runs/start` | `{function_id, variables}` |
+| 2 | `POST /functions/{id}/runs/start` | `{variables}` |
+| 3 | `POST /functions/{id}/runs` | `{function_id, variables}` |
+| 4 | `POST /functions/{id}/runs` | `{variables}` |
+| 5 | `POST /functions/{id}/run` | `{function_id, variables}` |
+| 6 | `POST /functions/{id}/run` | `{variables}` |
+| 7 | `GET /functions/{id}/runs?limit=50` | — |
+| 8 | `GET /functions/{id}/events?limit=50` | — |
+
 - Plain `HttpURLConnection` + `org.json` — no Retrofit/OkHttp/Moshi, nothing added to the APK.
-- 15 s connect / 30 s read timeouts, everything on `Dispatchers.IO`.
-- **Async runs are handled**: if the first response contains a `run_id` (or nested
-  `run.id` / `data.id`) and no event data, the client polls `GET {base}/runs/{run_id}`
-  every 1.2 s until the payload appears or the run reaches a terminal status
-  (40 s hard ceiling → the UI falls back to cache instead of hanging).
+- 10 s connect / 20 s read timeouts, everything on `Dispatchers.IO`.
+- `x-notte-api-key` is always sent. `Authorization: Bearer …` is added too, and the
+  request is automatically retried **without** it on `401`/`403` (some deployments
+  only accept one of the two).
+- **Async runs are handled**: if a response contains a `run_id` (or nested
+  `run.id` / `data.id`) and no event data, the client polls `GET /runs/{run_id}` and
+  `GET /functions/{id}/runs/{run_id}` every 1.5 s until the payload appears or the run
+  reaches a terminal status (30 s ceiling → the UI falls back to cache instead of hanging).
+- **Every attempt is recorded** in `EventApi.lastTrace`. When all rungs fail, the
+  Events screen prints that transcript under the error (`POST …/runs/start → HTTP 404`),
+  so the failure tells you exactly which endpoint and status to look at.
 
 ## 2. Reading the payload
 
 `EventParser` is deliberately schema-agnostic, because the function output can evolve:
 
-1. Parses the body as an object (or array).
+1. Parses the body as an object or array — including a payload that arrives as a JSON
+   **string** inside `output` / `result`, and prose wrapped around a fenced
+   ```` ```json … ``` ```` block (what an LLM step usually returns).
 2. Walks the tree up to 8 levels deep, skipping envelope keys (`variables`, `input`, `request`, `params`, `config`, `function`).
 3. Collects every array that yields event-looking objects, then keeps the **largest** one and sorts by date.
 4. Maps each object through alias tables:
@@ -56,7 +79,8 @@ seconds or millis, plus common human formats (`24 Oct 2026`, `October 24, 2026`,
 
 Anything that is not mapped is kept in `Event.raw` — the Events screen has a
 **“Show raw fields”** toggle that prints the keys of the first event, which is the
-fastest way to tell me which alias to add.
+fastest way to tell me which alias to add. The failure banner shows the endpoint
+transcript instead, so "nothing fetched" now points at the exact step that broke.
 
 > If you can paste one real response (or just the top-level keys + one event object),
 > I will pin the mapping exactly and delete the guessing.

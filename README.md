@@ -1,6 +1,6 @@
 # khajabad · ഖജാബാദ്
 
-A modern, offline PDF reader for Malayalam devotional books — built with **Kotlin + Jetpack Compose** and **no Material theme or Material components**. Cream paper, mint surfaces, deep‑ink typography, and motion that settles like water.
+A modern, offline PDF reader for two Malayalam devotional books — built with **Kotlin + Jetpack Compose** and **no Material theme or Material components**. Lilac paper, a violet accent, inky type, and motion that settles like water.
 
 <p align="center">
   <img alt="kotlin" src="https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?style=flat-square" />
@@ -13,7 +13,7 @@ A modern, offline PDF reader for Malayalam devotional books — built with **Kot
 
 ## Install
 
-<a href="https://github.com/kuttappu507/khajabad/releases/download/latest/khajabad.apk"><b>⬇ Download khajabad.apk</b></a> — signed release build (v1.1.1), Android 6.0+, ~16 MB. The books are fully offline; the optional events feed is the only thing that touches the network.
+<a href="https://github.com/kuttappu507/khajabad/releases/download/latest/khajabad.apk"><b>⬇ Download khajabad.apk</b></a> — signed release build (v1.2.0), Android 6.0+, ~16 MB. The books are fully offline; the optional events feed is the only thing that touches the network.
 
 Trouble installing ("App not installed")? See **[docs/INSTALL.md](docs/INSTALL.md)** — it is almost always an old copy signed with a different key, or the CI *zip* being installed instead of the `.apk`.
 
@@ -85,18 +85,40 @@ Everything is defined in code — `ui/theme/Theme.kt` and `ui/theme/KhIcons.kt`.
 
 | Token | Light | Dark |
 |---|---|---|
-| paper | `#FBF6ED` | `#07151A` |
-| card | `#FFFDF8` | `#0E2530` |
-| ink | `#0B1E33` | `#F3EFE5` |
-| mint | `#65D9B8` | `#5FD8B6` |
-| mint deep | `#1BA98A` | `#3AD6AE` |
-| gold | `#E5B364` | `#EAC57D` |
+| `bg` | `#F5F5FA` | `#090A14` |
+| `bgAlt` | `#EBEBF4` | `#121322` |
+| `surface` | `#FFFFFF` | `#171827` |
+| `text` | `#12132A` | `#F2F2F8` |
+| `textSoft` | `#6A6D8A` | `#9698B4` |
+| `accent` | `#6C5CE7` | `#8E80FF` |
+| `accentDeep` | `#5344C9` | `#B0A5FF` |
+| `accentSoft` | `#EBE8FE` | `#232046` |
+| `amber` | `#F5A46B` | `#FFC29A` |
+
+The tokens are named for their role (`bg`, `surface`, `text`, `accent`), not for a colour —
+no cream, no mint, and nothing borrowed from the reference screenshot but the layout.
 
 - **Type** — Outfit (Latin) + Noto Sans Malayalam, subset and bundled as static weights in `res/font` (no Google Fonts dependency at runtime).
 - **Icons** — every glyph is a hand‑built `ImageVector` path (menu, dome, mihrab, lantern, beads, hands, scroll, star). No icon font, no Material icons.
-- **Shapes** — 28 dp tiles, 32 dp cards, 100 dp pills.
+- **Shapes** — 24–30 dp cards, 100 dp pills.
 - **Motion** — `Motion.fluid()` (soft settle), `Motion.gentle()`, `Motion.snappy()`, and `Motion.stopMotion()` — a keyframes spec that *hops* through poses instead of gliding. Used by the splash letters, the counter and section reveals.
-- **Components** — custom pill buttons, circular icon buttons, floating tab bar with a sliding mint indicator, custom switch, custom text field, ripples, shimmer placeholders. `androidx.compose.material*` is not a dependency at all.
+- **Components** — custom pill buttons, circular icon buttons, floating tab bar with a sliding accent indicator, custom switch, custom text field, shimmer placeholders. `androidx.compose.material*` is not a dependency at all.
+
+## Reader
+
+The reader is a **continuous vertical document**, not a page-flip carousel:
+
+- `LazyColumn` of pages, each rendered at the device's real pixel width and sized by the
+  PDF's own aspect ratio, so a page runs edge to edge and the next page peeks in below.
+- One finger scrolls the document; a single tap hides/shows the chrome; the chrome is a
+  blur-free gradient so your page stays readable underneath.
+- Pinch to zoom (1×–4×) freezes the document scroll and turns one-finger gestures into
+  panning; double tap jumps 1× ↔ 2.5×; the zoom resets when you scroll away.
+- Day / night page background toggle (dark by default, for reading lit pages in the dark).
+- Thumbnail grid, hairline progress, drag-to-seek scrubber, per-page bookmarks.
+
+Home shows **only the two bundled books** — no invented catalogue, no decorative
+category grid.
 
 ---
 
@@ -112,8 +134,19 @@ Content-Type: application/json
 { "function_id": "…", "variables": { "query": "", "highlighted_only": false, "limit": 50 } }
 ```
 
-- If the run is asynchronous the client polls `GET /runs/{id}` until the payload arrives (40 s ceiling).
-- The JSON is read **tolerantly**: the parser walks the response for the event array and maps ~40 field aliases (`title|name|event_name`, `start|date|datetime|when`, `location|venue|place`, …), so a change on the function side does not break the app.
+- A Notte function is not one fixed endpoint, so the client walks a short ladder:
+  `POST /functions/{id}/runs/start`, then `/runs`, then `/run` (each with and without
+  `function_id` in the body), then `GET /functions/{id}/runs` and `/events` — and it
+  retries without the `Authorization: Bearer` header if the server answers 401/403.
+- If the answer carries a `run_id`, it polls `GET /runs/{id}` (and
+  `/functions/{id}/runs/{id}`) until events appear, 30 s ceiling.
+- Every attempt is recorded. If nothing works, the Events screen prints the whole
+  transcript, so a wrong endpoint shows up as `POST …/runs/start → HTTP 404` instead of
+  an endless spinner.
+- The JSON is read **tolerantly**: the parser walks the tree (including payloads returned
+  as a JSON *string* inside `output`/`result`, with or without ```` ```json ```` fences and
+  surrounding prose), finds the event array and maps ~40 field aliases
+  (`title|name|event_name`, `start|date|datetime|when`, `location|venue|place`, …).
 - Last good payload is cached in DataStore → the card and Events screen still work offline, marked "offline / saved · 2 h ago".
 - Configure the key via env var, `local.properties` or `notte.properties` (`NOTTE_API_KEY`, `NOTTE_FUNCTION_ID`, `NOTTE_BASE_URL`).
 
