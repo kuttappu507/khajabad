@@ -39,8 +39,8 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:generateDebugUnitTestConfig
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:bundleDebugClassesToCompileJar
 > Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
 > Task :app:processDebugJavaRes
 > Task :app:compileDebugUnitTestKotlin
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
@@ -48,16 +48,23 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 
 > Task :app:testDebugUnitTest
 
-LaunchSmokeTest > drawerOpensAndListsDestinations FAILED
-    java.lang.AssertionError at LaunchSmokeTest.kt:47
+LaunchSmokeTest > tabBarNavigatesToSearch PASSED
 
-LaunchSmokeTest > splashTransitionRendersHome FAILED
-    java.lang.AssertionError at LaunchSmokeTest.kt:47
+LaunchSmokeTest > tabBarNavigatesToCounter PASSED
 
-5 tests completed, 2 failed
+LaunchSmokeTest > homeShowsBothBundledBooks PASSED
+
+LaunchSmokeTest > drawerOpensAndListsDestinations PASSED
+
+LaunchSmokeTest > splashTransitionRendersHome PASSED
+
+LaunchSmokeTest > scrollReachesNextEventsAndBrowse FAILED
+    java.lang.AssertionError at LaunchSmokeTest.kt:83
+
+6 tests completed, 1 failed
 
 > Task :app:testDebugUnitTest FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792556656294.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792556831823.json
 
 FAILURE: Build failed with an exception.
 
@@ -68,5 +75,5 @@ Execution failed for task ':app:testDebugUnitTest'.
 * Try:
 > Run with --scan to get full insights.
 
-BUILD FAILED in 2m 12s
+BUILD FAILED in 2m 34s
 28 actionable tasks: 27 executed, 1 from cache
