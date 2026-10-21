@@ -183,7 +183,7 @@ Two workflows guard the release:
 |---|---|---|
 | `android.yml` | every push | `assembleRelease` + `assembleDebug`, then `apksigner verify --print-certs` and `aapt2 dump badging`, and re-uploads `khajabad.apk` to the `latest` release. |
 | `smoke.yml` → **JVM launch test** | every push | `LaunchSmokeTest` boots the real Compose app under Robolectric (sdk 30, `w411dp-h891dp-xxhdpi`, native graphics) and asserts six things: splash settles into home, both bundled books are listed, the drawer lists its destinations, the home list scrolls to *Next events* and *Browse*, the tab bar reaches the counter, and search opens. |
-| `smoke.yml` → **Boot app on emulator (manual)** | `workflow_dispatch` only | Installs the APK on an API 30 emulator, launches it, screenshots it and greps logcat. |
+| `smoke.yml` → **Boot app on emulator (manual)** | Actions → *Smoke test* → *Run workflow* | Installs the APK on an API 30 emulator, launches it, screenshots it, and fails the job if logcat contains a `FATAL EXCEPTION`. |
 
 When a run goes red the JVM job commits its Gradle output to
 [`docs/ci/jvm-test.log`](docs/ci/README.md) and the emulator job commits
