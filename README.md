@@ -123,7 +123,10 @@ cd khajabad
 ./gradlew installDebug           # with a device/emulator attached
 ```
 
-A ready GitHub Actions workflow (`.github/workflows/android.yml`) builds the debug APK on every push and uploads it as an artifact, so you can grab an installable APK straight from the Actions tab.
+A ready GitHub Actions workflow (`.github/workflows/android.yml`) builds the debug APK on every push and uploads it as an artifact — the current build passes:
+
+- **APK:** open the [Actions → Android CI](https://github.com/kuttappu507/khajabad/actions/workflows/android.yml) run and download `khajabad-debug-apk`
+- Screenshots in this README are generated automatically from `preview/` by `.github/workflows/screenshots.yml`.
 
 ### Adding your own PDFs
 
