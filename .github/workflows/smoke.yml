@@ -1,4 +1,4 @@
-name: Smoke test (emulator)
+name: Smoke test
 
 on:
   push:
@@ -14,75 +14,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: gradle/actions/setup-gradle@v4
+
       - name: Run launch test
         id: test
         continue-on-error: true
         run: |
           chmod +x ./gradlew
           ./gradlew testDebugUnitTest --console=plain --tests '*LaunchSmokeTest*' > test.log 2>&1
-      - name: Report JVM test
-        if: always()
-        run: |
-          python3 - <<'PY'
-          import os, re, glob, html
-          chunks = []
-          if os.path.exists('test.log'):
-              txt = open('test.log', errors='ignore').read()
-              # gradle prints the full stack trace for failed tests
-              start = txt.find('LaunchSmokeTest')
-              chunks.append(txt[-20000:])
-          for f in glob.glob('app/build/reports/tests/testDebugUnitTest/classes/*.html'):
-              body = open(f, errors='ignore').read()
-              pre = re.findall(r'<pre>(.*?)</pre>', body, re.S)
-              for p in pre[:3]:
-                  chunks.append(html.unescape(re.sub('<[^>]+>', '', p)))
-          for f in glob.glob('app/build/test-results/testDebugUnitTest/*.xml'):
-              body = open(f, errors='ignore').read()
-              for m in re.findall(r'<failure[^>]*>(.*?)</failure>', body, re.S):
-                  chunks.append(html.unescape(m))
-          report = '\n'.join(chunks)
-          lines = [l.rstrip() for l in report.splitlines() if l.strip()]
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as fh:
-              fh.write('## JVM launch test\n\n```\n' + report[:50000] + '\n```\n')
-          for line in lines[-40:]:
-              print('::error::' + line.replace('%', '%25').replace('\r', '')[:900])
-          PY
-          exit 1
 
       - name: Publish diagnostics
         if: always()
         run: |
-          set -e
           mkdir -p docs/ci
-          [ -f test.log ] && cp test.log docs/ci/jvm-test.log || true
-          [ -f logcat.txt ] && grep -iE "FATAL|AndroidRuntime|Caused by|khajabad|Exception|System.err" logcat.txt | tail -400 > docs/ci/logcat.txt || true
-          [ -f shot.png ] && cp shot.png docs/ci/emulator.png || true
+          if [ -f test.log ]; then cp test.log docs/ci/jvm-test.log; fi
           git config user.name "khajabad-ci"
           git config user.email "ci@khajabad.app"
           git add -f docs/ci
-          git commit -m "ci: diagnostics [skip ci]" || echo "nothing to publish"
-          git pull --rebase -q origin HEAD || true
-          git push -q origin HEAD || echo "push failed"
+          git commit -m "ci: jvm diagnostics [skip ci]" || exit 0
+          git pull --rebase origin ${GITHUB_REF_NAME} || true
+          git push origin HEAD:${GITHUB_REF_NAME}
 
-  smoke:
+      - name: Fail if the app did not launch
+        if: steps.test.outcome == 'failure'
+        run: exit 1
+
+  emulator:
     name: Boot app on emulator
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Assemble debug
         run: |
@@ -107,82 +81,29 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
-            set -x
             ADB="$ANDROID_HOME/platform-tools/adb"
             APK=$(ls app/build/outputs/apk/debug/*.apk | head -1)
-
             $ADB install -r "$APK"
             $ADB logcat -c
             $ADB shell am start -W -n com.khajabad.app/.MainActivity
             sleep 12
-
-            echo "===== focused activity ====="
-            $ADB shell dumpsys activity activities | grep -E "mResumedActivity|topResumedActivity" | head -3
-
-            echo "===== crashes ====="
-            $ADB logcat -d -b crash | tail -200 || true
-
-            echo "===== androidRuntime ====="
-            $ADB logcat -d | grep -iE "FATAL|AndroidRuntime|khajabad|Exception" | tail -300 || true
-
-            echo "===== app process ====="
-            $ADB shell pidof com.khajabad.app || echo "PROCESS NOT RUNNING"
-
+            $ADB shell dumpsys activity activities | grep -E "mResumedActivity|topResumedActivity" > activity.txt || true
             $ADB logcat -d > logcat.txt || true
             $ADB shell screencap -p /sdcard/shot.png && $ADB pull /sdcard/shot.png shot.png || true
+            cat activity.txt || true
 
-      - name: Report crash
-        if: always()
-        run: |
-          echo "emulator outcome: ${{ steps.emulator.outcome }}"
-          python3 - <<'PY'
-          import os, re
-          lines = []
-          if os.path.exists('logcat.txt'):
-              raw = open('logcat.txt', errors='ignore').read().splitlines()
-              keep = False
-              for line in raw:
-                  if 'FATAL EXCEPTION' in line or 'AndroidRuntime' in line:
-                      keep = True
-                  if keep:
-                      lines.append(line.strip())
-                  if keep and len(lines) > 120:
-                      break
-              if not lines:
-                  hits = [l.strip() for l in raw if re.search(r'(Exception|Error|khajabad)', l)]
-                  lines = hits[-120:]
-          else:
-              lines = ['logcat.txt missing - emulator step did not run']
-
-          report = '\n'.join(lines)
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as fh:
-              fh.write('## Smoke run log\n\n```\n' + report[:60000] + '\n```\n')
-          for line in lines[:25]:
-              print('::error::' + line.replace('%', '%25').replace('\r', '')[:900])
-          print(report)
-          PY
-
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-logs
-          path: |
-            logcat.txt
-            shot.png
-          if-no-files-found: warn
-          retention-days: 2
       - name: Publish diagnostics
         if: always()
         run: |
-          set -e
           mkdir -p docs/ci
-          [ -f test.log ] && cp test.log docs/ci/jvm-test.log || true
-          [ -f logcat.txt ] && grep -iE "FATAL|AndroidRuntime|Caused by|khajabad|Exception|System.err" logcat.txt | tail -400 > docs/ci/logcat.txt || true
-          [ -f shot.png ] && cp shot.png docs/ci/emulator.png || true
+          if [ -f logcat.txt ]; then
+            grep -iE "FATAL|AndroidRuntime|Caused by|khajabad|Exception" logcat.txt | tail -400 > docs/ci/logcat.txt || true
+          fi
+          if [ -f shot.png ]; then cp shot.png docs/ci/emulator.png; fi
+          if [ -f activity.txt ]; then cp activity.txt docs/ci/activity.txt; fi
           git config user.name "khajabad-ci"
           git config user.email "ci@khajabad.app"
           git add -f docs/ci
-          git commit -m "ci: diagnostics [skip ci]" || echo "nothing to publish"
-          git pull --rebase -q origin HEAD || true
-          git push -q origin HEAD || echo "push failed"
+          git commit -m "ci: emulator diagnostics [skip ci]" || exit 0
+          git pull --rebase origin ${GITHUB_REF_NAME} || true
+          git push origin HEAD:${GITHUB_REF_NAME}
