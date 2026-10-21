@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -25,10 +25,33 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build debug
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Assemble debug
+        id: assemble
+        continue-on-error: true
+        run: ./gradlew assembleDebug --console=plain --stacktrace > build.log 2>&1
+
+      - name: Show compiler errors
+        if: steps.assemble.outcome == 'failure'
+        run: |
+          python3 - <<'PY'
+          import re, os
+          text = open('build.log', errors='ignore').read()
+          hits = []
+          for line in text.splitlines():
+              if re.match(r'^e: ', line) or "error:" in line or line.startswith("FAILURE:") or "Caused by:" in line:
+                  hits.append(" ".join(line.split()))
+          hits = hits[:60]
+          report = "\n".join(hits)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as fh:
+              fh.write("## Build errors\n\n```\n" + report[:60000] + "\n```\n")
+          for line in hits[:20]:
+              print("::error::" + line.replace("%", "%25").replace("\r", "")[:900])
+          print(report)
+          PY
+          exit 1
 
       - name: Upload APK
+        if: steps.assemble.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: khajabad-debug-apk
