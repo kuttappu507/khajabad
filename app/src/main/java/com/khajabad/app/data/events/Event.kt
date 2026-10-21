@@ -306,9 +306,20 @@ object Dates {
     fun monthKey(millis: Long): String =
         SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date(millis))
 
+    /** Malayalam "x minutes ago" used in copy. */
     fun relative(epochMillis: Long): String {
-        val diff = abs(epochMillis - System.currentTimeMillis())
-        val minutes = diff / 60_000
+        val minutes = abs(epochMillis - System.currentTimeMillis()) / 60_000
+        return when {
+            minutes < 1 -> "ഇപ്പോൾ"
+            minutes < 60 -> "$minutes മിനിറ്റ് മുൻപ്"
+            minutes < 60 * 24 -> "${minutes / 60} മണിക്കൂർ മുൻപ്"
+            else -> "${minutes / (60 * 24)} ദിവസം മുൻപ്"
+        }
+    }
+
+    /** Compact English variant for status chips. */
+    fun relativeShort(epochMillis: Long): String {
+        val minutes = abs(epochMillis - System.currentTimeMillis()) / 60_000
         return when {
             minutes < 1 -> "just now"
             minutes < 60 -> "$minutes min ago"

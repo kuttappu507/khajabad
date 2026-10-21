@@ -206,7 +206,7 @@ private fun EventHero(
                 LiveDot(
                     live = state is EventsState.Live,
                     label = if (state is EventsState.Live) "NEXT EVENT"
-                    else "SAVED · ${Dates.relative(fresh)}",
+                    else "SAVED · ${Dates.relativeShort(fresh)}",
                     accent = colors.mint,
                 )
                 Spacer(Modifier.weight(1f))

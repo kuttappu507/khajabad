@@ -151,10 +151,10 @@ function sameDay(a, b) {
 
 function relativeTime(ts) {
   const mins = Math.max(0, Math.round((Date.now() - ts) / 60000));
-  if (mins < 1) return 'just now';
-  if (mins < 60) return mins + ' min ago';
-  if (mins < 1440) return Math.round(mins / 60) + ' h ago';
-  return Math.round(mins / 1440) + ' d ago';
+  if (mins < 1) return 'ഇപ്പോൾ';
+  if (mins < 60) return mins + ' മിനിറ്റ് മുൻപ്';
+  if (mins < 1440) return Math.round(mins / 60) + ' മണിക്കൂർ മുൻപ്';
+  return Math.round(mins / 1440) + ' ദിവസം മുൻപ്';
 }
 
 function countdown(start) {
@@ -266,7 +266,7 @@ function playSplash() {
 /* ------------------------------------------------------------ navigation */
 
 const SCREEN_TABS = { home: 0, library: 1, counter: 2, search: 3 };
-const NO_TABBAR = new Set(['splash', 'reader', 'bookmarks']);
+const NO_TABBAR = new Set(['splash', 'reader', 'bookmarks', 'events']);
 const NO_STATUSBAR_HIDE = new Set(['splash']);
 
 function showScreen(name) {
