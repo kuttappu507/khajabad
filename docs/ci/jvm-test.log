@@ -26,47 +26,38 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:parseDebugLocalResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
-> Task :app:preDebugUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompileDebugUnitTest
+> Task :app:processDebugManifestForPackage
 > Task :app:javaPreCompileDebug
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest FROM-CACHE
 > Task :app:mergeDebugShaders
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets
-> Task :app:processDebugManifestForPackage
 > Task :app:processDebugResources
 > Task :app:packageDebugUnitTestForUnitTest
 > Task :app:generateDebugUnitTestConfig
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:processDebugJavaRes
 > Task :app:bundleDebugClassesToCompileJar
 > Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:processDebugJavaRes
 > Task :app:compileDebugUnitTestKotlin
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes
 
 > Task :app:testDebugUnitTest
 
-LaunchSmokeTest > tabBarNavigatesToSearch FAILED
-    java.lang.AssertionError at LaunchSmokeTest.kt:75
-
-LaunchSmokeTest > tabBarNavigatesToCounter FAILED
-    java.lang.AssertionError at LaunchSmokeTest.kt:66
-
-LaunchSmokeTest > homeShowsBothBundledBooks FAILED
-    java.lang.AssertionError at LaunchSmokeTest.kt:50
-
 LaunchSmokeTest > drawerOpensAndListsDestinations FAILED
-    java.lang.AssertionError at LaunchSmokeTest.kt:57
+    java.lang.AssertionError at LaunchSmokeTest.kt:47
 
 LaunchSmokeTest > splashTransitionRendersHome FAILED
-    java.lang.AssertionError at LaunchSmokeTest.kt:42
+    java.lang.AssertionError at LaunchSmokeTest.kt:47
 
-5 tests completed, 5 failed
+5 tests completed, 2 failed
 
 > Task :app:testDebugUnitTest FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792556454664.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792556656294.json
 
 FAILURE: Build failed with an exception.
 
@@ -77,5 +68,5 @@ Execution failed for task ':app:testDebugUnitTest'.
 * Try:
 > Run with --scan to get full insights.
 
-BUILD FAILED in 2m 38s
-28 actionable tasks: 28 executed
+BUILD FAILED in 2m 12s
+28 actionable tasks: 27 executed, 1 from cache
