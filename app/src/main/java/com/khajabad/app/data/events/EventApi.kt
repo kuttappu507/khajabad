@@ -182,6 +182,9 @@ class EventApi(
             if (bearer) setRequestProperty("Authorization", "Bearer $apiKey")
             setRequestProperty("Content-Type", "application/json")
             setRequestProperty("Accept", "application/json")
+            // Some gateways reject the default Dalvik agent with a 403 before the
+            // request ever reaches the function.
+            setRequestProperty("User-Agent", USER_AGENT)
             connectTimeout = 10_000
             readTimeout = 20_000
         }
@@ -257,5 +260,6 @@ class EventApi(
     private companion object {
         const val TAG = "KhajabadEvents"
         const val POLL_DEADLINE_MS = 30_000L
+        const val USER_AGENT = "Mozilla/5.0 (Linux; Android 13) Khajabad/1.2"
     }
 }
