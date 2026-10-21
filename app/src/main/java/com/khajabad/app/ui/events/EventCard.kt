@@ -57,7 +57,7 @@ import java.util.concurrent.TimeUnit
 /**
  * The "next event" hero card on Home.
  *
- * Deep-ink surface (so it reads as a different material next to the mint tiles),
+ * Deep indigo surface (a different material to the white book rows),
  * a date block, a live countdown that ticks every second, and a freshness dot.
  */
 @Composable
@@ -176,10 +176,15 @@ private fun EventHero(
             .fillMaxWidth()
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(shape)
-            .background(Brush.linearGradient(listOf(Color(0xFF0D2436), colors.text)))
+            .background(
+                Brush.linearGradient(
+                    if (colors.isDark) listOf(Color(0xFF1B1C30), Color(0xFF25213F))
+                    else listOf(Color(0xFF181634), Color(0xFF2C2660))
+                )
+            )
             .clickable(interactionSource = interaction, indication = null, onClick = onClick),
     ) {
-        // soft mint bloom in the corner
+        // soft accent bloom in the corner
         Canvas(Modifier.fillMaxSize()) {
             drawCircle(
                 brush = Brush.radialGradient(

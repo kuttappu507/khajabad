@@ -52,7 +52,7 @@ import kotlinx.coroutines.delay
 
 /**
  * Splash: a mihrab arch draws itself, the wordmark arrives letter-by-letter in
- * discrete "stop motion" hops, then a mint sheen sweeps past the mark.
+ * discrete "stop motion" hops, then an accent sheen sweeps past the mark.
  */
 @Composable
 fun SplashScreen(onFinished: () -> Unit) {
@@ -98,7 +98,7 @@ fun SplashScreen(onFinished: () -> Unit) {
             .background(colors.bg),
         contentAlignment = Alignment.Center,
     ) {
-        // Radial mint glow behind the mark.
+        // Radial accent glow behind the mark.
         Canvas(Modifier.fillMaxSize()) {
             drawCircle(
                 brush = Brush.radialGradient(
