@@ -27,7 +27,7 @@ jobs:
         continue-on-error: true
         run: |
           chmod +x ./gradlew
-          ./gradlew testDebugUnitTest --console=plain --tests '*LaunchSmokeTest*' > test.log 2>&1
+          ./gradlew testDebugUnitTest --console=plain > test.log 2>&1
 
       - name: Publish diagnostics
         if: always()

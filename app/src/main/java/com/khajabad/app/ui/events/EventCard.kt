@@ -77,7 +77,7 @@ fun NextEventCard(
                     .fillMaxWidth()
                     .height(148.dp)
                     .clip(shape)
-                    .background(colors.ink.copy(alpha = 0.06f)),
+                    .background(colors.text.copy(alpha = 0.06f)),
             ) {
                 ShimmerBox(Modifier.fillMaxSize(), shape)
             }
@@ -89,7 +89,7 @@ fun NextEventCard(
                 modifier = modifier
                     .fillMaxWidth()
                     .clip(shape)
-                    .background(colors.paperAlt)
+                    .background(colors.bgAlt)
                     .border(1.dp, colors.line, shape)
                     .clickable(onClick = onRetry)
                     .padding(horizontal = 18.dp, vertical = 20.dp),
@@ -99,24 +99,24 @@ fun NextEventCard(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(colors.mintSoft),
+                        .background(colors.accentSoft),
                 ) {
-                    KhIcon(KhIcons.Refresh, Modifier.size(18.dp), colors.mintDeep)
+                    KhIcon(KhIcons.Refresh, Modifier.size(18.dp), colors.accentDeep)
                 }
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     BasicText(
                         text = "അടുത്ത പരിപാടികൾ",
-                        style = Type.MalLabel.copy(color = colors.ink, fontSize = 13.5.sp),
+                        style = Type.MalLabel.copy(color = colors.text, fontSize = 13.5.sp),
                     )
                     Spacer(Modifier.height(2.dp))
                     BasicText(
                         text = "ലോഡ് ചെയ്യാനായില്ല · വീണ്ടും ശ്രമിക്കാൻ ടാപ്പ് ചെയ്യുക",
-                        style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp),
+                        style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp),
                         maxLines = 2,
                     )
                 }
-                KhIcon(KhIcons.Refresh, Modifier.size(15.dp), colors.inkSoft)
+                KhIcon(KhIcons.Refresh, Modifier.size(15.dp), colors.textSoft)
             }
         }
 
@@ -127,12 +127,12 @@ fun NextEventCard(
                     modifier
                         .fillMaxWidth()
                         .clip(shape)
-                        .background(colors.paperAlt)
+                        .background(colors.bgAlt)
                         .padding(20.dp),
                 ) {
                     BasicText(
                         text = "വരാനിരിക്കുന്ന പരിപാടികൾ ഒന്നുമില്ല",
-                        style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 12.sp),
+                        style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 12.sp),
                     )
                 }
                 return
@@ -176,7 +176,7 @@ private fun EventHero(
             .fillMaxWidth()
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(shape)
-            .background(Brush.linearGradient(listOf(Color(0xFF0D2436), colors.ink)))
+            .background(Brush.linearGradient(listOf(Color(0xFF0D2436), colors.text)))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick),
     ) {
         // soft mint bloom in the corner
@@ -184,7 +184,7 @@ private fun EventHero(
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        colors.mint.copy(alpha = 0.22f + pulse * 0.06f),
+                        colors.accent.copy(alpha = 0.22f + pulse * 0.06f),
                         Color.Transparent,
                     ),
                     center = Offset(size.width * 0.92f, size.height * 0.08f),
@@ -194,7 +194,7 @@ private fun EventHero(
                 center = Offset(size.width * 0.92f, size.height * 0.08f),
             )
             drawLine(
-                color = colors.mint.copy(alpha = 0.16f),
+                color = colors.accent.copy(alpha = 0.16f),
                 start = Offset(0f, size.height - 22f),
                 end = Offset(size.width, size.height - 22f),
                 strokeWidth = 1.5f,
@@ -207,7 +207,7 @@ private fun EventHero(
                     live = state is EventsState.Live,
                     label = if (state is EventsState.Live) "NEXT EVENT"
                     else "SAVED · ${Dates.relativeShort(fresh)}",
-                    accent = colors.mint,
+                    accent = colors.accent,
                 )
                 Spacer(Modifier.weight(1f))
                 if (event.highlighted) {
@@ -215,14 +215,14 @@ private fun EventHero(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .clip(RoundedCornerShape(100))
-                            .background(colors.gold.copy(alpha = 0.18f))
+                            .background(colors.amber.copy(alpha = 0.18f))
                             .padding(horizontal = 9.dp, vertical = 4.dp),
                     ) {
-                        KhIcon(KhIcons.Star8, Modifier.size(9.dp), colors.gold)
+                        KhIcon(KhIcons.Star8, Modifier.size(9.dp), colors.amber)
                         Spacer(Modifier.width(4.dp))
                         BasicText(
                             text = "FEATURED",
-                            style = Type.Label.copy(color = colors.gold, fontSize = 7.5.sp),
+                            style = Type.Label.copy(color = colors.amber, fontSize = 7.5.sp),
                         )
                     }
                 }
@@ -236,7 +236,7 @@ private fun EventHero(
                 Column(Modifier.weight(1f)) {
                     BasicText(
                         text = event.title,
-                        style = Type.MalTitle.copy(color = colors.paper, fontSize = 16.sp, lineHeight = 23.sp),
+                        style = Type.MalTitle.copy(color = colors.bg, fontSize = 16.sp, lineHeight = 23.sp),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -249,7 +249,7 @@ private fun EventHero(
                         BasicText(
                             text = meta,
                             style = Type.Small.copy(
-                                color = colors.paper.copy(alpha = 0.62f),
+                                color = colors.bg.copy(alpha = 0.62f),
                                 fontSize = 11.sp,
                             ),
                             maxLines = 1,
@@ -268,15 +268,15 @@ private fun EventHero(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clip(RoundedCornerShape(100))
-                        .background(colors.mint.copy(alpha = 0.14f))
+                        .background(colors.accent.copy(alpha = 0.14f))
                         .padding(horizontal = 12.dp, vertical = 7.dp),
                 ) {
                     BasicText(
                         text = "കാണുക",
-                        style = Type.MalLabel.copy(color = colors.mint, fontSize = 11.5.sp),
+                        style = Type.MalLabel.copy(color = colors.accent, fontSize = 11.5.sp),
                     )
                     Spacer(Modifier.width(3.dp))
-                    KhIcon(KhIcons.ChevronRight, Modifier.size(12.dp), colors.mint)
+                    KhIcon(KhIcons.ChevronRight, Modifier.size(12.dp), colors.accent)
                 }
             }
         }
@@ -318,12 +318,12 @@ fun DateBlock(start: Long?, dark: Boolean = false, large: Boolean = true) {
         modifier = Modifier
             .size(width = if (large) 58.dp else 46.dp, height = if (large) 62.dp else 50.dp)
             .clip(RoundedCornerShape(if (large) 18.dp else 14.dp))
-            .background(if (dark) colors.mint else colors.mintSoft),
+            .background(if (dark) colors.accent else colors.accentSoft),
     ) {
         BasicText(
             text = day,
             style = Type.Display.copy(
-                color = if (dark) colors.onMint else colors.mintDeep,
+                color = if (dark) colors.onAccent else colors.accentDeep,
                 fontSize = if (large) 24.sp else 19.sp,
                 lineHeight = if (large) 26.sp else 21.sp,
                 letterSpacing = (-0.6).sp,
@@ -332,7 +332,7 @@ fun DateBlock(start: Long?, dark: Boolean = false, large: Boolean = true) {
         BasicText(
             text = month,
             style = Type.Label.copy(
-                color = if (dark) colors.onMint.copy(alpha = 0.72f) else colors.mintDeep.copy(alpha = 0.8f),
+                color = if (dark) colors.onAccent.copy(alpha = 0.72f) else colors.accentDeep.copy(alpha = 0.8f),
                 fontSize = if (large) 8.sp else 7.sp,
                 letterSpacing = 1.sp,
             ),
@@ -354,14 +354,14 @@ fun CountdownChip(start: Long?) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .clip(RoundedCornerShape(100))
-            .background(colors.mint.copy(alpha = 0.14f))
+            .background(colors.accent.copy(alpha = 0.14f))
             .padding(horizontal = 10.dp, vertical = 6.dp),
     ) {
-        KhIcon(KhIcons.Info, Modifier.size(11.dp), colors.mint)
+        KhIcon(KhIcons.Info, Modifier.size(11.dp), colors.accent)
         Spacer(Modifier.width(5.dp))
         BasicText(
             text = text,
-            style = Type.Small.copy(color = colors.mint, fontSize = 10.5.sp),
+            style = Type.Small.copy(color = colors.accent, fontSize = 10.5.sp),
         )
     }
 }

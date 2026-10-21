@@ -95,14 +95,14 @@ fun SplashScreen(onFinished: () -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(colors.paper),
+            .background(colors.bg),
         contentAlignment = Alignment.Center,
     ) {
         // Radial mint glow behind the mark.
         Canvas(Modifier.fillMaxSize()) {
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(colors.mint.copy(alpha = 0.34f), Color.Transparent),
+                    colors = listOf(colors.accent.copy(alpha = 0.34f), Color.Transparent),
                     center = Offset(size.width * 0.5f, size.height * 0.42f),
                     radius = size.minDimension * 0.62f,
                 ),
@@ -116,7 +116,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                 val py = size.height * (0.95f - phase * 0.9f)
                 val alpha = (1f - kotlin.math.abs(phase - 0.5f) * 2f).coerceIn(0f, 1f) * 0.5f
                 drawCircle(
-                    color = colors.mintDeep.copy(alpha = alpha * 0.7f),
+                    color = colors.accentDeep.copy(alpha = alpha * 0.7f),
                     radius = 1.4f + (seed % 3) * 0.9f,
                     center = Offset(px, py),
                 )
@@ -153,7 +153,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                     measure.getSegment(0f, measure.length * draw.coerceIn(0f, 1f), segment, true)
                     drawPath(
                         segment,
-                        color = colors.mintDeep,
+                        color = colors.accentDeep,
                         style = Stroke(width = 3.2.dp.toPx(), cap = StrokeCap.Round),
                     )
 
@@ -165,7 +165,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                                 brush = Brush.linearGradient(
                                     colors = listOf(
                                         Color.Transparent,
-                                        colors.mint.copy(alpha = 0.55f),
+                                        colors.accent.copy(alpha = 0.55f),
                                         Color.Transparent,
                                     ),
                                     start = Offset(x, 0f),
@@ -183,7 +183,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                     Modifier
                         .size(46.dp)
                         .graphicsLayer { alpha = ((draw - 0.45f) / 0.55f).coerceIn(0f, 1f) },
-                    colors.ink,
+                    colors.text,
                 )
 
                 val starReveal = ((draw - 0.7f) / 0.3f).coerceIn(0f, 1f)
@@ -197,7 +197,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                             translationY = (1f - starReveal) * 12f - 4f
                             rotationZ = (1f - starReveal) * -40f
                         },
-                    colors.gold,
+                    colors.amber,
                 )
             }
 
@@ -215,7 +215,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                         style = Type.Display.copy(
                             fontFamily = Outfit,
                             fontSize = 44.sp,
-                            color = colors.ink,
+                            color = colors.text,
                             fontWeight = FontWeight.SemiBold,
                         ),
                         modifier = Modifier.graphicsLayer {
@@ -236,7 +236,7 @@ fun SplashScreen(onFinished: () -> Unit) {
             BasicText(
                 text = "ഓഫ്‍ലൈൻ പുസ്തകശാല",
                 style = Type.MalLabel.copy(
-                    color = colors.inkSoft,
+                    color = colors.textSoft,
                     fontSize = 16.sp,
                     letterSpacing = 2.sp,
                 ),
@@ -245,7 +245,7 @@ fun SplashScreen(onFinished: () -> Unit) {
             Spacer(Modifier.height(6.dp))
             BasicText(
                 text = "OFFLINE PDF LIBRARY",
-                style = Type.Label.copy(color = colors.mintDeep, fontSize = 9.5.sp),
+                style = Type.Label.copy(color = colors.accentDeep, fontSize = 9.5.sp),
                 modifier = Modifier.graphicsLayer { alpha = subtitle },
             )
         }
@@ -269,7 +269,7 @@ fun SplashScreen(onFinished: () -> Unit) {
                     .fillMaxWidth(progress.coerceIn(0.02f, 1f))
                     .height(3.dp)
                     .background(
-                        Brush.horizontalGradient(listOf(colors.mint, colors.mintDeep)),
+                        Brush.horizontalGradient(listOf(colors.accent, colors.accentDeep)),
                         androidx.compose.foundation.shape.RoundedCornerShape(50),
                     ),
             )

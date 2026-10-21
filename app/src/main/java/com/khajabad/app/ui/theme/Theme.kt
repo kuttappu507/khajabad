@@ -27,48 +27,63 @@ import com.khajabad.app.R
 
 @Immutable
 data class KhajaColors(
-    val paper: Color,
-    val paperAlt: Color,
-    val card: Color,
-    val ink: Color,
-    val inkSoft: Color,
-    val mint: Color,
-    val mintDeep: Color,
-    val mintSoft: Color,
-    val onMint: Color,
-    val gold: Color,
+    /** Page background. */
+    val bg: Color,
+    /** Slightly recessed background for grouped rows and shelves. */
+    val bgAlt: Color,
+    /** Raised surfaces: sheets, cards, the nav bar. */
+    val surface: Color,
+    /** Primary text. */
+    val text: Color,
+    /** Secondary text, icons, captions. */
+    val textSoft: Color,
+    /** Brand accent — indigo/violet. */
+    val accent: Color,
+    val accentDeep: Color,
+    /** Tinted accent background (chips, selected rows). */
+    val accentSoft: Color,
+    /** Foreground drawn on top of [accent]. */
+    val onAccent: Color,
+    /** Warm secondary accent, used sparingly for dates and stars. */
+    val amber: Color,
     val line: Color,
     val scrim: Color,
     val isDark: Boolean,
 )
 
+/**
+ * "Indigo paper" — a cool, modern light theme. Not the cream/mint of the old
+ * reference: near-white lilac paper, inky indigo type, one confident violet
+ * accent and a peach highlight.
+ */
 val LightKhaja = KhajaColors(
-    paper = Color(0xFFFBF6ED),
-    paperAlt = Color(0xFFF4ECDF),
-    card = Color(0xFFFFFDF8),
-    ink = Color(0xFF0B1E33),
-    inkSoft = Color(0xFF63727F),
-    mint = Color(0xFF65D9B8),
-    mintDeep = Color(0xFF1BA98A),
-    mintSoft = Color(0xFFD7F5EA),
-    onMint = Color(0xFF0B1E33),
-    gold = Color(0xFFE5B364),
-    line = Color(0x140B1E33),
-    scrim = Color(0xFF04121A),
+    bg = Color(0xFFF5F5FA),
+    bgAlt = Color(0xFFEBEBF4),
+    surface = Color(0xFFFFFFFF),
+    text = Color(0xFF12132A),
+    textSoft = Color(0xFF6A6D8A),
+    accent = Color(0xFF6C5CE7),
+    accentDeep = Color(0xFF5344C9),
+    accentSoft = Color(0xFFEBE8FE),
+    onAccent = Color(0xFFFFFFFF),
+    amber = Color(0xFFF5A46B),
+    line = Color(0xFFE2E2EE),
+    scrim = Color(0xFF07081A),
     isDark = false,
 )
 
+/** "Midnight glass" — deep indigo-black with a brighter violet accent. */
 val NightKhaja = KhajaColors(
-    paper = Color(0xFF07151A),
-    paperAlt = Color(0xFF0B2028),
-    card = Color(0xFF0E2530),
-    ink = Color(0xFFF3EFE5),
-    inkSoft = Color(0xFF9AAEB2),
-    mint = Color(0xFF5FD8B6),
-    mintDeep = Color(0xFF3AD6AE),
-    mintSoft = Color(0xFF103A33),
-    onMint = Color(0xFF04211B),
-    gold = Color(0xFFEAC57D),
+    bg = Color(0xFF090A14),
+    bgAlt = Color(0xFF121322),
+    surface = Color(0xFF171827),
+    text = Color(0xFFF2F2F8),
+    textSoft = Color(0xFF9698B4),
+    accent = Color(0xFF8E80FF),
+    accentDeep = Color(0xFFB0A5FF),
+    accentSoft = Color(0xFF232046),
+    onAccent = Color(0xFF0C0B1C),
+    amber = Color(0xFFFFC29A),
     line = Color(0x1FFFFFFF),
     scrim = Color(0xFF000000),
     isDark = true,

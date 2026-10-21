@@ -79,29 +79,29 @@ fun EventsScreen(
 
     val events = state.events
 
-    Box(modifier.fillMaxSize().background(colors.paper)) {
+    Box(modifier.fillMaxSize().background(colors.bg)) {
         LazyColumn(
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 130.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RoundIconButton(KhIcons.Back, onBack, size = 42, background = colors.card)
+                    RoundIconButton(KhIcons.Back, onBack, size = 42, background = colors.surface)
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
-                        BasicText(text = "Events", style = Type.H2.copy(color = colors.ink))
+                        BasicText(text = "Events", style = Type.H2.copy(color = colors.text))
                         BasicText(
                             text = headerSubtitle(state, events.size),
-                            style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp),
+                            style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp),
                         )
                     }
                     RoundIconButton(
                         KhIcons.Refresh,
                         onRefresh,
                         size = 42,
-                        background = colors.mintSoft,
-                        borderColor = colors.mintSoft,
-                        tint = colors.mintDeep,
+                        background = colors.accentSoft,
+                        borderColor = colors.accentSoft,
+                        tint = colors.accentDeep,
                     )
                 }
             }
@@ -125,17 +125,41 @@ fun EventsScreen(
             if (state is EventsState.Failed) {
                 item {
                     Banner(text = state.error, icon = KhIcons.Info)
+                    if (state.detail.isNotBlank()) {
+                        Spacer(Modifier.height(10.dp))
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(colors.bgAlt)
+                                .padding(14.dp),
+                        ) {
+                            BasicText(
+                                text = "അവസാന ശ്രമത്തിന്റെ വിശദാംശം",
+                                style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 10.sp),
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            BasicText(
+                                text = state.detail,
+                                style = Type.Small.copy(
+                                    color = colors.textSoft,
+                                    fontSize = 9.5.sp,
+                                    lineHeight = 14.sp,
+                                ),
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(6.dp))
                     Box(
                         Modifier
                             .clip(RoundedCornerShape(100))
-                            .background(colors.mint)
+                            .background(colors.accent)
                             .clickable(onClick = onRefresh)
                             .padding(horizontal = 18.dp, vertical = 11.dp),
                     ) {
                         BasicText(
                             text = "വീണ്ടും ശ്രമിക്കുക",
-                            style = Type.MalLabel.copy(color = colors.onMint, fontSize = 12.sp),
+                            style = Type.MalLabel.copy(color = colors.onAccent, fontSize = 12.sp),
                         )
                     }
                 }
@@ -161,7 +185,7 @@ fun EventsScreen(
                     if (month != lastMonth) {
                         BasicText(
                             text = month.uppercase(),
-                            style = Type.Label.copy(color = colors.inkSoft, fontSize = 9.sp),
+                            style = Type.Label.copy(color = colors.textSoft, fontSize = 9.sp),
                             modifier = Modifier.padding(start = 6.dp, top = if (index == 0) 8.dp else 18.dp, bottom = 8.dp),
                         )
                         lastMonth = month
@@ -185,11 +209,11 @@ fun EventsScreen(
                             .clickable { showRaw = !showRaw }
                             .padding(horizontal = 6.dp, vertical = 6.dp),
                     ) {
-                        KhIcon(KhIcons.Dots, Modifier.size(12.dp), colors.inkSoft)
+                        KhIcon(KhIcons.Dots, Modifier.size(12.dp), colors.textSoft)
                         Spacer(Modifier.width(6.dp))
                         BasicText(
                             text = if (showRaw) "Hide raw fields" else "Show raw fields",
-                            style = Type.Small.copy(color = colors.inkSoft, fontSize = 10.sp),
+                            style = Type.Small.copy(color = colors.textSoft, fontSize = 10.sp),
                         )
                     }
                 }
@@ -200,12 +224,12 @@ fun EventsScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(18.dp))
-                                .background(colors.paperAlt)
+                                .background(colors.bgAlt)
                                 .padding(14.dp),
                         ) {
                             BasicText(
                                 text = if (raw.isEmpty()) "No raw fields cached" else raw.entries.joinToString("\n") { "${it.key}: ${it.value}" },
-                                style = Type.Small.copy(color = colors.inkSoft, fontSize = 9.5.sp, lineHeight = 15.sp),
+                                style = Type.Small.copy(color = colors.textSoft, fontSize = 9.5.sp, lineHeight = 15.sp),
                             )
                         }
                     }
@@ -262,15 +286,15 @@ private fun Banner(text: String, icon: androidx.compose.ui.graphics.vector.Image
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(colors.paperAlt)
+            .background(colors.bgAlt)
             .border(1.dp, colors.line, RoundedCornerShape(18.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
-        KhIcon(icon, Modifier.size(14.dp), colors.mintDeep)
+        KhIcon(icon, Modifier.size(14.dp), colors.accentDeep)
         Spacer(Modifier.width(10.dp))
         BasicText(
             text = text,
-            style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp, lineHeight = 17.sp),
+            style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp, lineHeight = 17.sp),
         )
     }
 }
@@ -289,10 +313,10 @@ private fun EventRow(event: Event, onClick: () -> Unit) {
             .fillMaxWidth()
             .graphicsLayer { scaleX = scale; scaleY = scale; alpha = if (past) 0.55f else 1f }
             .clip(RoundedCornerShape(24.dp))
-            .background(colors.card)
+            .background(colors.surface)
             .border(
                 1.dp,
-                if (today) colors.mint else colors.line,
+                if (today) colors.accent else colors.line,
                 RoundedCornerShape(24.dp),
             )
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
@@ -303,7 +327,7 @@ private fun EventRow(event: Event, onClick: () -> Unit) {
         Column(Modifier.weight(1f)) {
             BasicText(
                 text = event.title,
-                style = Type.MalTitle.copy(color = colors.ink, fontSize = 14.sp, lineHeight = 21.sp),
+                style = Type.MalTitle.copy(color = colors.text, fontSize = 14.sp, lineHeight = 21.sp),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -313,12 +337,12 @@ private fun EventRow(event: Event, onClick: () -> Unit) {
                     Box(
                         Modifier
                             .clip(RoundedCornerShape(100))
-                            .background(colors.mintSoft)
+                            .background(colors.accentSoft)
                             .padding(horizontal = 7.dp, vertical = 2.dp),
                     ) {
                         BasicText(
                             text = "ഇന്ന്",
-                            style = Type.MalLabel.copy(color = colors.mintDeep, fontSize = 9.sp),
+                            style = Type.MalLabel.copy(color = colors.accentDeep, fontSize = 9.sp),
                         )
                     }
                     Spacer(Modifier.width(7.dp))
@@ -328,13 +352,13 @@ private fun EventRow(event: Event, onClick: () -> Unit) {
                         event.start?.let { Dates.timeOnly(it) },
                         event.location,
                     ).joinToString(" · ").ifBlank { "വിശദാംശങ്ങൾ കാണുക" },
-                    style = Type.Small.copy(color = colors.inkSoft, fontSize = 10.5.sp),
+                    style = Type.Small.copy(color = colors.textSoft, fontSize = 10.5.sp),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-        KhIcon(KhIcons.ChevronRight, Modifier.size(15.dp), colors.inkSoft)
+        KhIcon(KhIcons.ChevronRight, Modifier.size(15.dp), colors.textSoft)
     }
 }
 
@@ -352,7 +376,7 @@ private fun EventSheet(
             .fillMaxWidth()
             .fillMaxHeight(0.74f)
             .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
-            .background(colors.card)
+            .background(colors.surface)
             .clickable(enabled = false) {}
             .navigationBarsPadding(),
     ) {
@@ -376,19 +400,19 @@ private fun EventSheet(
                 Column(Modifier.weight(1f)) {
                     BasicText(
                         text = event.title,
-                        style = Type.MalTitle.copy(color = colors.ink, fontSize = 17.sp, lineHeight = 25.sp),
+                        style = Type.MalTitle.copy(color = colors.text, fontSize = 17.sp, lineHeight = 25.sp),
                     )
                     Spacer(Modifier.height(4.dp))
                     BasicText(
                         text = event.start?.let { Dates.readable(it) } ?: "തീയതി പ്രഖ്യാപിച്ചിട്ടില്ല",
-                        style = Type.Small.copy(color = colors.mintDeep, fontSize = 11.sp),
+                        style = Type.Small.copy(color = colors.accentDeep, fontSize = 11.sp),
                     )
                 }
                 RoundIconButton(
                     KhIcons.Close,
                     onClose,
                     size = 34,
-                    background = colors.paperAlt,
+                    background = colors.bgAlt,
                     borderColor = colors.line,
                 )
             }
@@ -407,7 +431,7 @@ private fun EventSheet(
                 Spacer(Modifier.height(6.dp))
                 BasicText(
                     text = it,
-                    style = Type.MalBody.copy(color = colors.inkSoft, fontSize = 13.sp, lineHeight = 22.sp),
+                    style = Type.MalBody.copy(color = colors.textSoft, fontSize = 13.sp, lineHeight = 22.sp),
                 )
             }
 
@@ -440,17 +464,17 @@ private fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label
             modifier = Modifier
                 .size(28.dp)
                 .clip(CircleShape)
-                .background(colors.mintSoft),
+                .background(colors.accentSoft),
         ) {
-            KhIcon(icon, Modifier.size(13.dp), colors.mintDeep)
+            KhIcon(icon, Modifier.size(13.dp), colors.accentDeep)
         }
         Spacer(Modifier.width(11.dp))
         Column {
-            BasicText(text = label, style = Type.Label.copy(color = colors.inkSoft, fontSize = 8.5.sp))
+            BasicText(text = label, style = Type.Label.copy(color = colors.textSoft, fontSize = 8.5.sp))
             Spacer(Modifier.height(2.dp))
             BasicText(
                 text = value,
-                style = Type.MalLabel.copy(color = colors.ink, fontSize = 12.5.sp, lineHeight = 19.sp),
+                style = Type.MalLabel.copy(color = colors.text, fontSize = 12.5.sp, lineHeight = 19.sp),
             )
         }
     }
@@ -471,15 +495,15 @@ private fun SheetAction(
         modifier = modifier
             .height(50.dp)
             .clip(RoundedCornerShape(100))
-            .background(if (filled) colors.ink else colors.paperAlt)
+            .background(if (filled) colors.text else colors.bgAlt)
             .clickable(onClick = onClick),
     ) {
-        KhIcon(icon, Modifier.size(14.dp), if (filled) colors.mint else colors.inkSoft)
+        KhIcon(icon, Modifier.size(14.dp), if (filled) colors.accent else colors.textSoft)
         Spacer(Modifier.width(8.dp))
         BasicText(
             text = label,
             style = Type.MalLabel.copy(
-                color = if (filled) colors.paper else colors.inkSoft,
+                color = if (filled) colors.bg else colors.textSoft,
                 fontSize = 11.sp,
             ),
             maxLines = 1,

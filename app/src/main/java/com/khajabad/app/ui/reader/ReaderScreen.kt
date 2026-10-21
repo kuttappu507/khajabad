@@ -15,34 +15,36 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +52,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,15 +59,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.khajabad.app.core.Book
@@ -74,14 +74,26 @@ import com.khajabad.app.core.PdfPages
 import com.khajabad.app.ui.components.PdfPageImage
 import com.khajabad.app.ui.components.RoundIconButton
 import com.khajabad.app.ui.components.ShimmerBox
-import com.khajabad.app.ui.theme.KhIcons
 import com.khajabad.app.ui.theme.KhIcon
+import com.khajabad.app.ui.theme.KhIcons
 import com.khajabad.app.ui.theme.Khaja
 import com.khajabad.app.ui.theme.Motion
 import com.khajabad.app.ui.theme.Type
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
+/**
+ * The reader: one continuous, full-bleed vertical scroll of PDF pages.
+ *
+ * This is the "native document" model rather than a page-flip carousel — you
+ * flick through the book the way you scroll a web page, the pages fill the
+ * screen edge to edge, and the chrome fades away when you start reading.
+ *
+ * Gestures:
+ *  * single tap     — show / hide the chrome
+ *  * pinch          — zoom (1×–4×); the scroll locks while zoomed
+ *  * one finger     — pan while zoomed, scroll while not
+ *  * double tap     — jump between 1× and 2.5×
+ */
 @Composable
 fun ReaderScreen(
     book: Book,
@@ -95,148 +107,143 @@ fun ReaderScreen(
     val colors = Khaja.colors
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
 
-    val pager = rememberPagerState(
-        initialPage = initialPage.coerceIn(0, (book.pages - 1).coerceAtLeast(0)),
-    ) { book.pages.coerceAtLeast(1) }
+    val pageCount = book.pages.coerceAtLeast(1)
+    val startPage = initialPage.coerceIn(0, pageCount - 1)
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = startPage)
 
     var chrome by remember { mutableStateOf(true) }
-    var night by remember { mutableStateOf(true) }
-    var zoom by remember { mutableFloatStateOf(1f) }
-    var pan by remember { mutableStateOf(Offset.Zero) }
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
     var showPages by remember { mutableStateOf(false) }
+    var daylight by remember { mutableStateOf(false) }
 
-    val bg = if (night) Color(0xFF07141A) else colors.paperAlt
-    val fg = if (night) Color(0xFFF1EDE3) else colors.ink
-    val fgSoft = if (night) Color(0x8FF1EDE3) else colors.inkSoft
+    val current by remember { derivedStateOf { listState.firstVisibleItemIndex } }
+    val zoomed = scale > 1.01f
 
-    LaunchedEffect(pager.currentPage) {
-        onPageChanged(pager.currentPage)
-        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-        zoom = 1f
-        pan = Offset.Zero
+    // Render at the real screen width so text is crisp at 1× without decoding
+    // anything larger than the device can show.
+    val targetWidth = with(density) {
+        (configuration.screenWidthDp.dp.toPx()).toInt().coerceIn(720, 2000)
     }
 
-    // Prefetch neighbours so page turns feel instant.
-    val context = LocalContext.current
-    LaunchedEffect(pager.currentPage) {
-        val current = pager.currentPage
+    val pageBg = if (daylight) Color(0xFFE8E8EF) else Color(0xFF07070D)
+    val fg = if (daylight) Color(0xFF14142A) else Color(0xFFF3F3FA)
+    val fgSoft = if (daylight) Color(0x9914142A) else Color(0x99F3F3FA)
+
+    LaunchedEffect(current) {
+        onPageChanged(current)
+        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        // Neighbour prefetch keeps the scroll from showing placeholders.
         listOf(current + 1, current - 1).forEach { index ->
-            if (index in 0 until book.pages) {
-                PdfPages.render(context, book, index, 900)
-            }
+            if (index in 0 until pageCount) PdfPages.render(context, book, index, targetWidth)
         }
     }
 
-    Box(
+    LaunchedEffect(zoomed) {
+        if (!zoomed) offset = Offset.Zero
+    }
+
+    fun setZoom(target: Float, focus: Offset = Offset.Zero) {
+        val next = target.coerceIn(1f, 4f)
+        scale = next
+        offset = if (next <= 1.01f) Offset.Zero else focus
+    }
+
+    BoxWithConstraints(
         modifier
             .fillMaxSize()
-            .background(bg),
+            .background(pageBg),
     ) {
-        HorizontalPager(
-            state = pager,
-            userScrollEnabled = zoom <= 1.01f,
-            modifier = Modifier.fillMaxSize(),
-        ) { index ->
-            val pageOffset = ((pager.currentPage - index) + pager.currentPageOffsetFraction)
-                .coerceIn(-1f, 1f)
-            val abs = abs(pageOffset)
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 96.dp)
-                    .graphicsLayer {
-                        rotationY = pageOffset * -16f
-                        transformOrigin = TransformOrigin(0.5f, 0.5f)
-                        cameraDistance = 16f * density
-                        alpha = 1f - abs * 0.35f
-                        scaleX = 1f - abs * 0.06f
-                        scaleY = 1f - abs * 0.06f
-                        translationX = -pageOffset * 26f * density
-                    },
-            ) {
-                FittedPage(
-                    book = book,
-                    index = index,
-                    zoom = if (index == pager.currentPage) zoom else 1f,
-                    pan = if (index == pager.currentPage) pan else Offset.Zero,
-                    onGesture = { z, p ->
-                        zoom = (zoom * z).coerceIn(1f, 4.2f)
-                        pan += p
-                    },
-                )
-            }
+        val widthPx = with(density) { maxWidth.toPx() }
+        val heightPx = with(density) { maxHeight.toPx() }
+
+        fun clampPan(value: Offset, at: Float): Offset {
+            val maxX = (widthPx * (at - 1f)) / 2f
+            val maxY = (heightPx * (at - 1f)) / 2f
+            return Offset(
+                value.x.coerceIn(-maxX.coerceAtLeast(0f), maxX.coerceAtLeast(0f)),
+                value.y.coerceIn(-maxY.coerceAtLeast(0f), maxY.coerceAtLeast(0f)),
+            )
         }
 
-        // Tap zones: toggle chrome, double tap to zoom.
         Box(
             Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures(
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    translationX = offset.x
+                    translationY = offset.y
+                },
+        ) {
+            LazyColumn(
+                state = listState,
+                userScrollEnabled = !zoomed,
+                contentPadding = PaddingValues(vertical = 0.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                items(pageCount) { index ->
+                    ReaderPage(
+                        book = book,
+                        index = index,
+                        targetWidth = targetWidth,
+                        zoomed = zoomed,
                         onTap = { chrome = !chrome },
                         onDoubleTap = {
-                            if (zoom > 1.05f) {
-                                zoom = 1f
-                                pan = Offset.Zero
-                            } else {
-                                zoom = 2.2f
-                            }
+                            if (zoomed) setZoom(1f) else setZoom(2.5f)
                         },
+                        onPinch = { factor ->
+                            val next = (scale * factor).coerceIn(1f, 4f)
+                            scale = next
+                            offset = clampPan(offset, next)
+                        },
+                        onPan = { delta -> offset = clampPan(offset + delta, scale) },
                     )
                 }
-                .then(
-                    if (zoom > 1.01f) {
-                        Modifier.pointerInput(Unit) {
-                            detectDragGestures { change, drag ->
-                                pan += drag
-                                change.consume()
-                            }
-                        }
-                    } else Modifier
-                ),
-        )
+            }
+        }
 
-        // Hairline reading progress, always visible.
+        // Hairline progress, always visible.
         Box(
             Modifier
                 .fillMaxWidth()
                 .height(2.dp)
-                .background(if (night) Color.White.copy(alpha = 0.08f) else colors.ink.copy(alpha = 0.06f)),
+                .background(fg.copy(alpha = 0.10f)),
         ) {
             val progress by animateFloatAsState(
-                targetValue = ((pager.currentPage + 1).toFloat() / book.pages.coerceAtLeast(1)),
+                targetValue = ((current + 1).toFloat() / pageCount).coerceIn(0f, 1f),
                 animationSpec = Motion.fluid(),
                 label = "readProgress",
             )
             Box(
                 Modifier
-                    .fillMaxWidth(progress.coerceIn(0f, 1f))
+                    .fillMaxWidth(progress)
                     .height(2.dp)
-                    .background(colors.mint),
+                    .background(colors.accent),
             )
         }
 
         AnimatedVisibility(
             visible = chrome,
-            enter = fadeIn(tween(220)) + slideInVertically(tween(320)) { -it / 2 },
-            exit = fadeOut(tween(180)) + slideOutVertically(tween(260)) { -it / 2 },
+            enter = fadeIn(tween(220)) + slideInVertically(tween(320)) { -it / 3 },
+            exit = fadeOut(tween(180)) + slideOutVertically(tween(260)) { -it / 3 },
             modifier = Modifier.align(Alignment.TopCenter),
         ) {
-            Box(
+            Column(
                 Modifier
                     .fillMaxWidth()
                     .background(
                         Brush.verticalGradient(
-                            listOf(
-                                (if (night) Color.Black else colors.paper).copy(alpha = 0.92f),
-                                Color.Transparent,
-                            )
+                            listOf(pageBg.copy(alpha = 0.96f), pageBg.copy(alpha = 0.72f), Color.Transparent),
                         )
                     )
                     .statusBarsPadding()
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RoundIconButton(
@@ -244,8 +251,8 @@ fun ReaderScreen(
                         onBack,
                         size = 42,
                         tint = fg,
-                        background = if (night) Color.White.copy(alpha = 0.08f) else colors.card,
-                        borderColor = if (night) Color.White.copy(alpha = 0.10f) else colors.line,
+                        background = fg.copy(alpha = 0.10f),
+                        borderColor = Color.Transparent,
                     )
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
@@ -255,35 +262,36 @@ fun ReaderScreen(
                             maxLines = 1,
                         )
                         BasicText(
-                            text = "പേജ് ${pager.currentPage + 1} / ${book.pages}",
-                            style = Type.Small.copy(color = fgSoft, fontSize = 10.5.sp),
+                            text = "${book.latin} · പേജ് ${current + 1} / $pageCount",
+                            style = Type.Small.copy(color = fgSoft, fontSize = 10.sp),
+                            maxLines = 1,
                         )
                     }
-                    RoundIconButton(
-                        if (bookmarked(pager.currentPage)) KhIcons.BookmarkFull else KhIcons.Bookmark,
-                        { onToggleBookmark(pager.currentPage) },
-                        size = 42,
-                        tint = if (bookmarked(pager.currentPage)) colors.mint else fg,
-                        background = if (night) Color.White.copy(alpha = 0.08f) else colors.card,
-                        borderColor = if (night) Color.White.copy(alpha = 0.10f) else colors.line,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    RoundIconButton(
-                        if (night) KhIcons.Sun else KhIcons.Moon,
-                        { night = !night },
-                        size = 42,
-                        tint = fg,
-                        background = if (night) Color.White.copy(alpha = 0.08f) else colors.card,
-                        borderColor = if (night) Color.White.copy(alpha = 0.10f) else colors.line,
-                    )
-                    Spacer(Modifier.width(8.dp))
                     RoundIconButton(
                         KhIcons.Grid,
                         { showPages = true },
                         size = 42,
                         tint = fg,
-                        background = if (night) Color.White.copy(alpha = 0.08f) else colors.card,
-                        borderColor = if (night) Color.White.copy(alpha = 0.10f) else colors.line,
+                        background = fg.copy(alpha = 0.10f),
+                        borderColor = Color.Transparent,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    RoundIconButton(
+                        if (daylight) KhIcons.Moon else KhIcons.Sun,
+                        { daylight = !daylight },
+                        size = 42,
+                        tint = fg,
+                        background = fg.copy(alpha = 0.10f),
+                        borderColor = Color.Transparent,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    RoundIconButton(
+                        if (bookmarked(current)) KhIcons.HeartFull else KhIcons.Heart,
+                        { onToggleBookmark(current) },
+                        size = 42,
+                        tint = if (bookmarked(current)) colors.amber else fg,
+                        background = fg.copy(alpha = 0.10f),
+                        borderColor = Color.Transparent,
                     )
                 }
             }
@@ -291,81 +299,49 @@ fun ReaderScreen(
 
         AnimatedVisibility(
             visible = chrome,
-            enter = fadeIn(tween(220)) + slideInVertically(tween(340)) { it / 2 },
-            exit = fadeOut(tween(180)) + slideOutVertically(tween(260)) { it / 2 },
-            modifier = Modifier.align(Alignment.BottomCenter),
+            enter = fadeIn(tween(220)) + slideInVertically(tween(320)) { it / 2 },
+            exit = fadeOut(tween(160)) + slideOutVertically(tween(240)) { it / 2 },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding(),
         ) {
             Column(
                 Modifier
                     .fillMaxWidth()
                     .background(
                         Brush.verticalGradient(
-                            listOf(
-                                Color.Transparent,
-                                (if (night) Color.Black else colors.paper).copy(alpha = 0.94f),
-                            )
+                            listOf(Color.Transparent, pageBg.copy(alpha = 0.82f), pageBg.copy(alpha = 0.97f)),
                         )
                     )
-                    .navigationBarsPadding()
-                    .padding(start = 18.dp, end = 18.dp, top = 34.dp, bottom = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .padding(start = 24.dp, end = 24.dp, top = 26.dp, bottom = 20.dp),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    RoundIconButton(
-                        KhIcons.Back,
-                        { scope.launch { pager.animateScrollToPage((pager.currentPage - 1).coerceAtLeast(0)) } },
-                        size = 44,
-                        tint = fg,
-                        background = if (night) Color.White.copy(alpha = 0.08f) else colors.card,
-                        borderColor = if (night) Color.White.copy(alpha = 0.10f) else colors.line,
-                    )
-                    PageScrubber(
-                        page = pager.currentPage,
-                        pages = book.pages,
-                        accent = colors.mint,
-                        track = if (night) Color.White.copy(alpha = 0.14f) else colors.ink.copy(alpha = 0.10f),
-                        modifier = Modifier.weight(1f),
-                        onSeek = { target -> scope.launch { pager.animateScrollToPage(target) } },
-                    )
-                    RoundIconButton(
-                        KhIcons.ChevronRight,
-                        {
-                            scope.launch {
-                                pager.animateScrollToPage(
-                                    (pager.currentPage + 1).coerceAtMost(book.pages - 1)
-                                )
-                            }
-                        },
-                        size = 44,
-                        tint = fg,
-                        background = if (night) Color.White.copy(alpha = 0.08f) else colors.card,
-                        borderColor = if (night) Color.White.copy(alpha = 0.10f) else colors.line,
-                    )
-                }
-                Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    KhIcon(KhIcons.Book, Modifier.size(12.dp), fgSoft)
-                    Spacer(Modifier.width(6.dp))
                     BasicText(
-                        text = book.latin.uppercase(),
-                        style = Type.Label.copy(color = fgSoft, fontSize = 8.5.sp),
+                        text = "${current + 1}",
+                        style = Type.H2.copy(color = fg, fontSize = 18.sp),
                     )
-                    Spacer(Modifier.width(10.dp))
-                    Box(
-                        Modifier
-                            .size(3.dp)
-                            .clip(CircleShape)
-                            .background(fgSoft)
-                    )
-                    Spacer(Modifier.width(10.dp))
                     BasicText(
-                        text = if (zoom > 1.05f) "സൂം ${(zoom * 100).toInt()}%" else "ഇരട്ട ടാപ്പ് · സൂം",
+                        text = " / $pageCount",
+                        style = Type.Small.copy(color = fgSoft, fontSize = 11.sp),
+                    )
+                    Spacer(Modifier.weight(1f))
+                    BasicText(
+                        text = if (zoomed) "സൂം ${(scale * 100).toInt()}% · സമ്പൂർണ്ണ വീതി"
+                        else "തുടർച്ചയായ സ്ക്രോൾ · സമ്പൂർണ്ണ വീതി",
                         style = Type.MalLabel.copy(color = fgSoft, fontSize = 9.5.sp),
                     )
                 }
+                Spacer(Modifier.height(10.dp))
+                PageSeek(
+                    page = current,
+                    pages = pageCount,
+                    accent = colors.accent,
+                    track = fg.copy(alpha = 0.16f),
+                    thumb = pageBg,
+                    onSeek = { target ->
+                        scope.launch { listState.scrollToItem(target.coerceIn(0, pageCount - 1)) }
+                    },
+                )
             }
         }
 
@@ -378,16 +354,16 @@ fun ReaderScreen(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.55f))
+                    .background(Color.Black.copy(alpha = 0.6f))
                     .clickable { showPages = false },
                 contentAlignment = Alignment.BottomCenter,
             ) {
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.72f)
+                        .fillMaxHeight(0.74f)
                         .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
-                        .background(if (night) Color(0xFF0C232B) else colors.paper)
+                        .background(colors.surface)
                         .clickable(enabled = false) {}
                         .navigationBarsPadding()
                         .padding(vertical = 18.dp),
@@ -400,27 +376,24 @@ fun ReaderScreen(
                     ) {
                         BasicText(
                             text = "പേജുകൾ",
-                            style = Type.MalH2.copy(
-                                color = if (night) Color(0xFFF1EDE3) else colors.ink,
-                                fontSize = 17.sp,
-                            ),
+                            style = Type.MalH2.copy(color = colors.text, fontSize = 17.sp),
                         )
                         Spacer(Modifier.weight(1f))
                         BasicText(
-                            text = "${book.pages}",
-                            style = Type.Small.copy(color = colors.mintDeep),
+                            text = "${current + 1} / $pageCount",
+                            style = Type.Small.copy(color = colors.accentDeep),
                         )
                     }
                     Spacer(Modifier.height(10.dp))
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(4),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp),
+                        contentPadding = PaddingValues(horizontal = 18.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                         modifier = Modifier.fillMaxSize(),
                     ) {
-                        items(book.pages) { index ->
-                            val active = index == pager.currentPage
+                        items(pageCount) { index ->
+                            val active = index == current
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Box(
                                     Modifier
@@ -430,12 +403,12 @@ fun ReaderScreen(
                                         .background(Color.White)
                                         .border(
                                             width = if (active) 2.dp else 1.dp,
-                                            color = if (active) colors.mint else Color.White.copy(alpha = 0.2f),
+                                            color = if (active) colors.accent else colors.line,
                                             shape = RoundedCornerShape(12.dp),
                                         )
                                         .clickable {
                                             showPages = false
-                                            scope.launch { pager.animateScrollToPage(index) }
+                                            scope.launch { listState.animateScrollToItem(index) }
                                         },
                                 ) {
                                     PdfPageImage(
@@ -449,7 +422,7 @@ fun ReaderScreen(
                                 BasicText(
                                     text = "${index + 1}",
                                     style = Type.Small.copy(
-                                        color = if (active) colors.mint else Color(0xFF9FB0B5),
+                                        color = if (active) colors.accentDeep else colors.textSoft,
                                         fontSize = 10.sp,
                                     ),
                                 )
@@ -463,109 +436,115 @@ fun ReaderScreen(
 }
 
 /**
- * Page card that fits the viewport and preserves the PDF page aspect ratio.
+ * One page of the book: full width, height from the real PDF aspect ratio, with
+ * tap / pinch / pan routing.
  */
 @Composable
-private fun FittedPage(
+private fun ReaderPage(
     book: Book,
     index: Int,
-    zoom: Float,
-    pan: Offset,
-    onGesture: (Float, Offset) -> Unit,
+    targetWidth: Int,
+    zoomed: Boolean,
+    onTap: () -> Unit,
+    onDoubleTap: () -> Unit,
+    onPinch: (Float) -> Unit,
+    onPan: (Offset) -> Unit,
 ) {
     val context = LocalContext.current
-    val image by produceState<ImageBitmap?>(null, book.id, index) {
-        value = PdfPages.render(context, book, index, 1200)
+    var ratio by remember(book.id) { mutableFloatStateOf(DEFAULT_RATIO) }
+
+    val image by produceState<ImageBitmap?>(initialValue = null, book.id, index, targetWidth) {
+        val bitmap = PdfPages.render(context, book, index, targetWidth)
+        if (bitmap != null && bitmap.height > 0) {
+            ratio = (bitmap.width.toFloat() / bitmap.height.toFloat()).coerceIn(0.2f, 2f)
+        }
+        value = bitmap
     }
 
-    BoxWithConstraints(
+    Box(
         Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
+            .fillMaxWidth()
+            .aspectRatio(ratio)
+            .background(Color.White)
+            .pointerInput(zoomed) {
                 awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false)
-                    var multi = false
                     var event = awaitPointerEvent()
                     do {
-                        val pressedCount = event.changes.count { it.pressed }
-                        if (pressedCount > 1) multi = true
-                        if (multi) {
+                        val pressed = event.changes.count { it.pressed }
+                        if (pressed > 1) {
                             val zoomChange = event.calculateZoom()
                             val panChange = event.calculatePan()
-                            if (zoomChange != 1f || panChange != Offset.Zero) {
-                                onGesture(zoomChange, panChange)
+                            if (zoomChange != 1f) {
+                                onPinch(zoomChange)
+                                event.changes.forEach { it.consume() }
+                            } else if (panChange != Offset.Zero) {
+                                onPan(panChange)
+                                event.changes.forEach { it.consume() }
+                            }
+                        } else if (pressed == 1 && zoomed) {
+                            val panChange = event.calculatePan()
+                            if (panChange != Offset.Zero) {
+                                onPan(panChange)
                                 event.changes.forEach { it.consume() }
                             }
                         }
                         event = awaitPointerEvent()
                     } while (event.changes.any { it.pressed })
                 }
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onTap() },
+                    onDoubleTap = { onDoubleTap() },
+                )
             },
         contentAlignment = Alignment.Center,
     ) {
-        val ratio = image?.let { it.width.toFloat() / it.height.toFloat() } ?: 0.72f
-        val fitWidth = if (maxWidth.value * ratio > maxHeight.value) maxHeight * ratio else maxWidth
-        val cardWidth = fitWidth
-        val cardHeight = cardWidth / ratio
-
-        val density = LocalDensity.current
-        val maxPanX = with(density) { (cardWidth * (zoom - 1f) / 2f).toPx() }
-        val maxPanY = with(density) { (cardHeight * (zoom - 1f) / 2f).toPx() }
-        val panX = pan.x.coerceIn(-maxPanX, maxPanX)
-        val panY = pan.y.coerceIn(-maxPanY, maxPanY)
-
-        Box(
-            Modifier
-                .size(cardWidth, cardHeight)
-                .graphicsLayer {
-                    scaleX = zoom
-                    scaleY = zoom
-                    translationX = panX
-                    translationY = panY
-                }
-                .clip(RoundedCornerShape(14.dp))
-                .background(Color.White),
-        ) {
-            val bitmap = image
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = "Page ${index + 1}",
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                ShimmerBox(Modifier.fillMaxSize(), RoundedCornerShape(14.dp))
-            }
+        val bitmap = image
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = "Page ${index + 1}",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            ShimmerBox(Modifier.fillMaxSize(), RoundedCornerShape(0.dp))
         }
     }
 }
 
+/** Thin seek bar used under the reader; tap or drag to jump pages. */
 @Composable
-private fun PageScrubber(
+private fun PageSeek(
     page: Int,
     pages: Int,
     accent: Color,
     track: Color,
+    thumb: Color,
     onSeek: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val denominator = (pages - 1).coerceAtLeast(1)
     var dragFraction by remember { mutableFloatStateOf(-1f) }
-    val fraction = if (dragFraction >= 0f) dragFraction else page.toFloat() / denominator
+    val base = if (pages <= 1) 0f else page.toFloat() / denominator
+    val fraction = if (dragFraction >= 0f) dragFraction else base
 
     BoxWithConstraints(
         modifier = modifier
-            .height(40.dp)
+            .height(34.dp)
             .pointerInput(pages) {
                 detectTapGestures { offset ->
                     val f = (offset.x / size.width).coerceIn(0f, 1f)
-                    onSeek((f * denominator).toInt())
+                    onSeek((f * denominator).toInt().coerceIn(0, pages - 1))
                 }
             }
             .pointerInput(pages) {
-                detectDragGestures(
-                    onDragStart = { offset -> dragFraction = (offset.x / size.width).coerceIn(0f, 1f) },
+                androidx.compose.foundation.gestures.detectDragGestures(
+                    onDragStart = { offset ->
+                        dragFraction = (offset.x / size.width).coerceIn(0f, 1f)
+                    },
                     onDragEnd = {
                         val target = (dragFraction * denominator).toInt().coerceIn(0, pages - 1)
                         dragFraction = -1f
@@ -596,11 +575,13 @@ private fun PageScrubber(
         )
         Box(
             Modifier
-                .offset(x = maxWidth * fraction.coerceIn(0f, 1f) - 7.dp)
-                .size(14.dp)
+                .offset(x = maxWidth * fraction.coerceIn(0f, 1f) - 6.dp)
+                .size(12.dp)
                 .clip(CircleShape)
                 .background(accent)
-                .border(2.dp, Color.Black.copy(alpha = 0.15f), CircleShape),
+                .border(2.dp, thumb, CircleShape),
         )
     }
 }
+
+private const val DEFAULT_RATIO = 0.707f

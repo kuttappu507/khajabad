@@ -53,7 +53,11 @@ sealed interface EventsState {
         val error: String,
     ) : EventsState
 
-    data class Failed(val error: String) : EventsState {
+    data class Failed(
+        val error: String,
+        /** Endpoint-by-endpoint log from the last attempt, shown in the UI. */
+        val detail: String = "",
+    ) : EventsState {
         override val events: List<Event> get() = emptyList()
     }
 
@@ -95,9 +99,7 @@ object EventParser {
     private val HIGHLIGHT_KEYS = listOf("highlighted", "featured", "is_highlighted", "pin", "pinned", "star")
 
     fun parse(body: String): List<Event> {
-        val root = runCatching { JSONObject(body) }.getOrNull()
-            ?: runCatching { JSONArray(body) }.getOrNull()
-            ?: return emptyList()
+        val root = json(body) ?: return emptyList()
         val candidates = mutableListOf<List<Event>>()
         collect(root, candidates, depth = 0)
         return candidates.maxByOrNull { it.size }?.sortedWith(
@@ -126,7 +128,38 @@ object EventParser {
                 }
                 for (i in 0 until node.length()) collect(node.opt(i), sink, depth + 1)
             }
+            is String -> {
+                // Notte functions often return their payload as a JSON (or
+                // fenced ```json) *string* inside `output` / `result`.
+                if (node.length in 8..400_000 && looksLikeJson(node)) {
+                    json(node)?.let { collect(it, sink, depth + 1) }
+                }
+            }
         }
+    }
+
+    private fun looksLikeJson(text: String): Boolean {
+        val t = text.trim()
+        return t.startsWith("{") || t.startsWith("[") ||
+            (t.contains("```") && (t.contains("{") || t.contains("[")))
+    }
+
+    /** Parses JSON, tolerating fences, prose around the payload and whole-body strings. */
+    private fun json(text: String): Any? {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return null
+        runCatching { return JSONObject(trimmed) }
+        runCatching { return JSONArray(trimmed) }
+
+        val start = trimmed.indexOfFirst { it == '{' || it == '[' }
+        if (start < 0) return null
+        val slice = trimmed.substring(start).trimEnd()
+        val end = slice.indexOfLast { it == '}' || it == ']' }
+        if (end <= 0) return null
+        val candidate = slice.substring(0, end + 1)
+        runCatching { return JSONObject(candidate) }
+        runCatching { return JSONArray(candidate) }
+        return null
     }
 
     private fun toEvent(o: JSONObject): Event? {

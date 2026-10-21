@@ -78,24 +78,24 @@ fun CounterScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(colors.paper)
+            .background(colors.bg)
             .padding(horizontal = 22.dp),
     ) {
         Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                BasicText(text = "Counter", style = Type.H1.copy(color = colors.ink))
+                BasicText(text = "Counter", style = Type.H1.copy(color = colors.text))
                 Spacer(Modifier.height(3.dp))
                 BasicText(
                     text = "ദിക്ർ കൗണ്ടർ · ഓഫ്‌ലൈൻ",
-                    style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 12.sp),
+                    style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 12.sp),
                 )
             }
             RoundIconButton(
                 KhIcons.Refresh,
                 onReset,
                 size = 44,
-                background = colors.card,
+                background = colors.surface,
             )
         }
 
@@ -113,7 +113,7 @@ fun CounterScreen(
                 for (key in activeRipples) {
                     TapRipple(
                         key = key,
-                        color = colors.mint,
+                        color = colors.accent,
                         onFinished = { ripples.remove(key) },
                     )
                 }
@@ -121,19 +121,19 @@ fun CounterScreen(
                 Canvas(Modifier.size(292.dp)) {
                     drawCircle(
                         brush = Brush.radialGradient(
-                            colors = listOf(colors.mint.copy(alpha = 0.26f), Color.Transparent),
+                            colors = listOf(colors.accent.copy(alpha = 0.26f), Color.Transparent),
                             center = center,
                             radius = size.minDimension * 0.5f,
                         ),
                         radius = size.minDimension * 0.5f,
                     )
                     drawCircle(
-                        color = colors.ink.copy(alpha = 0.06f),
+                        color = colors.text.copy(alpha = 0.06f),
                         radius = size.minDimension * 0.395f,
                         style = Stroke(7.dp.toPx()),
                     )
                     drawArc(
-                        color = colors.mintDeep,
+                        color = colors.accentDeep,
                         startAngle = -90f,
                         sweepAngle = 360f * fraction.coerceIn(0f, 1f),
                         useCenter = false,
@@ -160,7 +160,7 @@ fun CounterScreen(
                         BasicText(
                             text = "${animated.roundToInt()}",
                             style = Type.Display.copy(
-                                color = colors.paper,
+                                color = colors.bg,
                                 fontSize = 66.sp,
                                 lineHeight = 70.sp,
                             ),
@@ -169,7 +169,7 @@ fun CounterScreen(
                         BasicText(
                             text = if (target > 0) "$inCycle / $target" else "∞",
                             style = Type.Small.copy(
-                                color = colors.mint,
+                                color = colors.accent,
                                 fontSize = 12.sp,
                                 letterSpacing = 1.4.sp,
                             ),
@@ -178,7 +178,7 @@ fun CounterScreen(
                         BasicText(
                             text = "ടാപ്പ് ചെയ്യുക",
                             style = Type.MalLabel.copy(
-                                color = colors.paper.copy(alpha = 0.55f),
+                                color = colors.bg.copy(alpha = 0.55f),
                                 fontSize = 11.sp,
                             ),
                         )
@@ -195,7 +195,7 @@ fun CounterScreen(
         ) {
             BasicText(
                 text = "സൈക്കിൾ ${cycles + 1} · ${target.coerceAtLeast(1)} എണ്ണം",
-                style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 12.sp),
+                style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 12.sp),
             )
         }
 
@@ -257,11 +257,11 @@ private fun TapSurface(onTap: () -> Unit, content: @Composable () -> Unit) {
             .clip(CircleShape)
             .background(
                 Brush.radialGradient(
-                    colors = listOf(colors.ink, Color(0xFF07131F)),
+                    colors = listOf(colors.text, Color(0xFF07131F)),
                     radius = 420f,
                 )
             )
-            .border(1.dp, colors.mint.copy(alpha = 0.25f), CircleShape)
+            .border(1.dp, colors.accent.copy(alpha = 0.25f), CircleShape)
             .clickable(interactionSource = interaction, indication = null, onClick = onTap),
     ) { content() }
 }
@@ -307,7 +307,7 @@ private fun PresetChip(
             .height(44.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(100))
-            .background(if (selected) colors.ink else Color.Transparent)
+            .background(if (selected) colors.text else Color.Transparent)
             .border(
                 1.2.dp,
                 if (selected) Color.Transparent else colors.line,
@@ -318,7 +318,7 @@ private fun PresetChip(
         BasicText(
             text = label,
             style = Type.Title.copy(
-                color = if (selected) colors.mint else colors.inkSoft,
+                color = if (selected) colors.accent else colors.textSoft,
                 fontSize = 13.sp,
             ),
         )
@@ -347,16 +347,16 @@ private fun ActionPill(
             .height(52.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(100))
-            .background(if (filled) colors.ink else colors.card)
+            .background(if (filled) colors.text else colors.surface)
             .border(1.dp, if (filled) Color.Transparent else colors.line, RoundedCornerShape(100))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick),
     ) {
-        KhIcon(icon, Modifier.size(15.dp), if (filled) colors.mint else colors.inkSoft)
+        KhIcon(icon, Modifier.size(15.dp), if (filled) colors.accent else colors.textSoft)
         Spacer(Modifier.size(8.dp))
         BasicText(
             text = label,
             style = Type.MalLabel.copy(
-                color = if (filled) colors.paper else colors.inkSoft,
+                color = if (filled) colors.bg else colors.textSoft,
                 fontSize = 11.sp,
             ),
             maxLines = 1,

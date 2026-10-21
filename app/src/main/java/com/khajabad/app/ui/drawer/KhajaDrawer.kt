@@ -87,7 +87,7 @@ fun KhajaDrawer(
                     .width(312.dp)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(topEnd = 36.dp, bottomEnd = 36.dp))
-                    .background(colors.paper)
+                    .background(colors.bg)
                     .statusBarsPadding()
                     .padding(horizontal = 20.dp, vertical = 18.dp),
             ) {
@@ -97,19 +97,19 @@ fun KhajaDrawer(
                         modifier = Modifier
                             .size(46.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(colors.mint),
+                            .background(colors.accent),
                     ) {
-                        KhIcon(KhIcons.Book, Modifier.size(21.dp), colors.onMint)
+                        KhIcon(KhIcons.Book, Modifier.size(21.dp), colors.onAccent)
                     }
                     Spacer(Modifier.width(12.dp))
                     Column {
                         BasicText(
                             text = "khajabad",
-                            style = Type.Title.copy(color = colors.ink, fontSize = 18.sp),
+                            style = Type.Title.copy(color = colors.text, fontSize = 18.sp),
                         )
                         BasicText(
                             text = "ഓഫ്‌ലൈൻ പുസ്തകശാല",
-                            style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 10.5.sp),
+                            style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 10.5.sp),
                         )
                     }
                 }
@@ -117,7 +117,7 @@ fun KhajaDrawer(
                 Spacer(Modifier.height(26.dp))
                 BasicText(
                     text = "LIBRARY",
-                    style = Type.Label.copy(color = colors.inkSoft, fontSize = 9.sp),
+                    style = Type.Label.copy(color = colors.textSoft, fontSize = 9.sp),
                     modifier = Modifier.padding(start = 6.dp, bottom = 10.dp),
                 )
 
@@ -158,12 +158,12 @@ fun KhajaDrawer(
                     KhIcon(
                         if (dark) KhIcons.Moon else KhIcons.Sun,
                         Modifier.size(17.dp),
-                        colors.inkSoft,
+                        colors.textSoft,
                     )
                     Spacer(Modifier.width(12.dp))
                     BasicText(
                         text = "Night reading",
-                        style = Type.Title.copy(color = colors.ink, fontSize = 13.sp),
+                        style = Type.Title.copy(color = colors.text, fontSize = 13.sp),
                         modifier = Modifier.weight(1f),
                     )
                     KhajaSwitch(checked = dark, onChange = { onToggleDark() })
@@ -175,21 +175,21 @@ fun KhajaDrawer(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
-                        .background(colors.paperAlt)
+                        .background(colors.bgAlt)
                         .padding(14.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        KhIcon(KhIcons.Star8, Modifier.size(13.dp), colors.mintDeep)
+                        KhIcon(KhIcons.Star8, Modifier.size(13.dp), colors.accentDeep)
                         Spacer(Modifier.width(8.dp))
                         BasicText(
-                            text = "khajabad · v1.0",
-                            style = Type.Label.copy(color = colors.ink, fontSize = 9.sp),
+                            text = "khajabad · v1.2",
+                            style = Type.Label.copy(color = colors.text, fontSize = 9.sp),
                         )
                     }
                     Spacer(Modifier.height(5.dp))
                     BasicText(
                         text = "ഇന്റർനെറ്റ് ഇല്ലാതെയും വായിക്കാം. നിങ്ങളുടെ പുസ്തകങ്ങൾ ഫോണിൽ തന്നെ സുരക്ഷിതം.",
-                        style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 10.sp, lineHeight = 16.sp),
+                        style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 10.sp, lineHeight = 16.sp),
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -216,7 +216,7 @@ private fun DrawerItem(
             .padding(vertical = 2.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(18.dp))
-            .background(if (selected) colors.mintSoft else Color.Transparent)
+            .background(if (selected) colors.accentSoft else Color.Transparent)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 11.dp),
     ) {
@@ -225,19 +225,19 @@ private fun DrawerItem(
             modifier = Modifier
                 .size(30.dp)
                 .clip(RoundedCornerShape(11.dp))
-                .background(if (selected) colors.mint else colors.paperAlt),
+                .background(if (selected) colors.accent else colors.bgAlt),
         ) {
-            KhIcon(icon, Modifier.size(15.dp), if (selected) colors.onMint else colors.inkSoft)
+            KhIcon(icon, Modifier.size(15.dp), if (selected) colors.onAccent else colors.textSoft)
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             BasicText(
                 text = title,
-                style = Type.Title.copy(color = colors.ink, fontSize = 13.sp),
+                style = Type.Title.copy(color = colors.text, fontSize = 13.sp),
             )
             BasicText(
                 text = subtitle,
-                style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 10.sp),
+                style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 10.sp),
             )
         }
         if (selected) {
@@ -245,7 +245,7 @@ private fun DrawerItem(
                 Modifier
                     .size(5.dp)
                     .clip(CircleShape)
-                    .background(colors.mintDeep),
+                    .background(colors.accentDeep),
             )
         }
     }
@@ -263,7 +263,7 @@ fun KhajaSwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
         modifier = Modifier
             .size(width = 44.dp, height = 26.dp)
             .clip(CircleShape)
-            .background(if (checked) colors.mint else colors.ink.copy(alpha = 0.12f))
+            .background(if (checked) colors.accent else colors.text.copy(alpha = 0.12f))
             .border(1.dp, colors.line, CircleShape)
             .clickable { onChange(!checked) }
             .padding(3.dp),
@@ -273,7 +273,7 @@ fun KhajaSwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
                 .offset(x = offset)
                 .size(20.dp)
                 .clip(CircleShape)
-                .background(if (checked) colors.onMint else colors.card)
+                .background(if (checked) colors.onAccent else colors.surface)
                 .graphicsLayer { shadowElevation = 6f },
         )
     }

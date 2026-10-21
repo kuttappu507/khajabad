@@ -84,7 +84,10 @@ class KhajabadViewModel(app: Application) : AndroidViewModel(app) {
                     _events.value = if (cached.isNotEmpty()) {
                         EventsState.Stale(cached, cachedAt, error.message ?: "Offline")
                     } else {
-                        EventsState.Failed(error.message ?: "Could not load events")
+                        EventsState.Failed(
+                            error = error.message ?: "Could not load events",
+                            detail = (error as? EventApi.ApiError)?.trace ?: eventApi.lastTrace,
+                        )
                     }
                 }
         }

@@ -281,7 +281,7 @@ object KhIcons {
 fun KhIcon(
     icon: ImageVector,
     modifier: Modifier = Modifier,
-    tint: Color = Khaja.colors.ink,
+    tint: Color = Khaja.colors.text,
     description: String? = null,
 ) {
     Image(

@@ -61,7 +61,7 @@ fun LibraryScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(colors.paper),
+            .background(colors.bg),
         contentPadding = PaddingValues(start = 22.dp, end = 22.dp, top = 16.dp, bottom = 140.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -71,20 +71,20 @@ fun LibraryScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.weight(1f)) {
-                    BasicText(text = "Library", style = Type.H1.copy(color = colors.ink))
+                    BasicText(text = "Library", style = Type.H1.copy(color = colors.text))
                     Spacer(Modifier.height(3.dp))
                     BasicText(
                         text = "${books.size} പുസ്തകങ്ങൾ · ഓഫ്‌ലൈൻ",
-                        style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 12.sp),
+                        style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 12.sp),
                     )
                 }
                 RoundIconButton(
                     KhIcons.Plus,
                     onImport,
                     size = 46,
-                    background = colors.mint,
+                    background = colors.accent,
                     borderColor = Color.Transparent,
-                    tint = colors.onMint,
+                    tint = colors.onAccent,
                 )
             }
         }
@@ -129,19 +129,19 @@ fun LibraryScreen(
                         modifier = Modifier
                             .size(34.dp)
                             .clip(CircleShape)
-                            .background(colors.mintSoft),
+                            .background(colors.accentSoft),
                     ) {
-                        KhIcon(KhIcons.Plus, Modifier.size(16.dp), colors.mintDeep)
+                        KhIcon(KhIcons.Plus, Modifier.size(16.dp), colors.accentDeep)
                     }
                     Spacer(Modifier.width(12.dp))
                     Column {
                         BasicText(
                             text = "PDF ചേർക്കുക",
-                            style = Type.MalLabel.copy(color = colors.ink, fontSize = 13.5.sp),
+                            style = Type.MalLabel.copy(color = colors.text, fontSize = 13.5.sp),
                         )
                         BasicText(
                             text = "ഫോണിൽ നിന്ന് ഒരു പുസ്തകം തിരഞ്ഞെടുക്കുക",
-                            style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp),
+                            style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp),
                         )
                     }
                 }
@@ -161,7 +161,7 @@ private fun SavedPagesCard(count: Int, onClick: () -> Unit) {
             .fillMaxWidth()
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(26.dp))
-            .background(colors.paperAlt)
+            .background(colors.bgAlt)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
@@ -170,23 +170,23 @@ private fun SavedPagesCard(count: Int, onClick: () -> Unit) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(colors.mint),
+                .background(colors.accent),
         ) {
-            KhIcon(KhIcons.BookmarkFull, Modifier.size(18.dp), colors.onMint)
+            KhIcon(KhIcons.BookmarkFull, Modifier.size(18.dp), colors.onAccent)
         }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             BasicText(
                 text = "സേവ് ചെയ്ത പേജുകൾ",
-                style = Type.MalLabel.copy(color = colors.ink, fontSize = 13.5.sp),
+                style = Type.MalLabel.copy(color = colors.text, fontSize = 13.5.sp),
             )
             BasicText(
                 text = if (count == 0) "ഇനിയും ഒന്നും സേവ് ചെയ്തിട്ടില്ല"
                 else "$count പേജ് ബുക്ക്മാർക്ക് ചെയ്തിരിക്കുന്നു",
-                style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp),
+                style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp),
             )
         }
-        KhIcon(KhIcons.ChevronRight, Modifier.size(16.dp), colors.inkSoft)
+        KhIcon(KhIcons.ChevronRight, Modifier.size(16.dp), colors.textSoft)
     }
 }
 
@@ -208,7 +208,7 @@ private fun BookRow(
             .fillMaxWidth()
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(28.dp))
-            .background(colors.card)
+            .background(colors.surface)
             .border(1.dp, colors.line, RoundedCornerShape(28.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(12.dp),
@@ -233,13 +233,13 @@ private fun BookRow(
         Column(Modifier.weight(1f)) {
             BasicText(
                 text = book.title,
-                style = Type.MalTitle.copy(color = colors.ink, fontSize = 14.5.sp, lineHeight = 21.sp),
+                style = Type.MalTitle.copy(color = colors.text, fontSize = 14.5.sp, lineHeight = 21.sp),
                 maxLines = 2,
             )
             Spacer(Modifier.height(2.dp))
             BasicText(
                 text = book.latin,
-                style = Type.Small.copy(color = colors.inkSoft, fontSize = 11.sp),
+                style = Type.Small.copy(color = colors.textSoft, fontSize = 11.sp),
                 maxLines = 1,
             )
             Spacer(Modifier.height(10.dp))
@@ -248,20 +248,20 @@ private fun BookRow(
                     .fillMaxWidth()
                     .height(4.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(colors.paperAlt),
+                    .background(colors.bgAlt),
             ) {
                 Box(
                     Modifier
                         .fillMaxWidth(progress.coerceAtLeast(0.02f))
                         .height(4.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(colors.mintDeep),
+                        .background(colors.accentDeep),
                 )
             }
             Spacer(Modifier.height(6.dp))
             BasicText(
                 text = "${book.pages} പേജ് · ${(progress * 100).toInt()}%",
-                style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 10.5.sp),
+                style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 10.5.sp),
             )
         }
         Spacer(Modifier.width(6.dp))
@@ -273,7 +273,7 @@ private fun BookRow(
                     .clip(CircleShape)
                     .clickable(onClick = onRemove),
             ) {
-                KhIcon(KhIcons.Close, Modifier.size(13.dp), colors.inkSoft.copy(alpha = 0.7f))
+                KhIcon(KhIcons.Close, Modifier.size(13.dp), colors.textSoft.copy(alpha = 0.7f))
             }
         } else {
             Box(
@@ -281,9 +281,9 @@ private fun BookRow(
                 modifier = Modifier
                     .size(34.dp)
                     .clip(CircleShape)
-                    .background(colors.mintSoft),
+                    .background(colors.accentSoft),
             ) {
-                KhIcon(KhIcons.ChevronRight, Modifier.size(15.dp), colors.mintDeep)
+                KhIcon(KhIcons.ChevronRight, Modifier.size(15.dp), colors.accentDeep)
             }
         }
     }

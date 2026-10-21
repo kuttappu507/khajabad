@@ -96,16 +96,16 @@ fun SearchScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(colors.paper),
+            .background(colors.bg),
         contentPadding = PaddingValues(start = 22.dp, end = 22.dp, top = 18.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            BasicText(text = "Search", style = Type.H1.copy(color = colors.ink))
+            BasicText(text = "Search", style = Type.H1.copy(color = colors.text))
             Spacer(Modifier.height(3.dp))
             BasicText(
                 text = "പുസ്തകങ്ങൾ, പേജുകൾ, ബുക്ക്മാർക്കുകൾ",
-                style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 12.sp),
+                style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 12.sp),
             )
         }
         item {
@@ -122,7 +122,7 @@ fun SearchScreen(
                 Spacer(Modifier.height(6.dp))
                 BasicText(
                     text = "SUGGESTIONS",
-                    style = Type.Label.copy(color = colors.inkSoft, fontSize = 9.5.sp),
+                    style = Type.Label.copy(color = colors.textSoft, fontSize = 9.5.sp),
                 )
             }
             item {
@@ -131,14 +131,14 @@ fun SearchScreen(
                         Box(
                             Modifier
                                 .clip(RoundedCornerShape(100))
-                                .background(colors.card)
+                                .background(colors.surface)
                                 .border(1.dp, colors.line, RoundedCornerShape(100))
                                 .clickable { query = category.label }
                                 .padding(horizontal = 15.dp, vertical = 9.dp),
                         ) {
                             BasicText(
                                 text = category.label,
-                                style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 12.sp),
+                                style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 12.sp),
                             )
                         }
                     }
@@ -146,7 +146,7 @@ fun SearchScreen(
             }
             item {
                 Spacer(Modifier.height(10.dp))
-                BasicText(text = "ALL BOOKS", style = Type.Label.copy(color = colors.inkSoft, fontSize = 9.5.sp))
+                BasicText(text = "ALL BOOKS", style = Type.Label.copy(color = colors.textSoft, fontSize = 9.5.sp))
             }
             items(books.size) { index ->
                 val book = books[index]
@@ -164,7 +164,7 @@ fun SearchScreen(
                     Spacer(Modifier.height(10.dp))
                     BasicText(
                         text = "SAVED PAGES",
-                        style = Type.Label.copy(color = colors.inkSoft, fontSize = 9.5.sp),
+                        style = Type.Label.copy(color = colors.textSoft, fontSize = 9.5.sp),
                     )
                 }
                 items(bookmarkPairs.size) { index ->
@@ -182,7 +182,7 @@ fun SearchScreen(
                 item {
                     BasicText(
                         text = "${matched.size} പുസ്തകം",
-                        style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp),
+                        style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp),
                     )
                 }
                 items(matched.size) { index ->
@@ -201,7 +201,7 @@ fun SearchScreen(
                 item {
                     BasicText(
                         text = "പേജിലേക്ക് പോകുക",
-                        style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp),
+                        style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp),
                     )
                 }
                 items(books.size) { index ->
@@ -236,7 +236,7 @@ private fun SearchField(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val border by animateColorAsState(
-        targetValue = if (focused || query.isNotEmpty()) colors.mint else colors.line,
+        targetValue = if (focused || query.isNotEmpty()) colors.accent else colors.line,
         animationSpec = Motion.fluid(),
         label = "border",
     )
@@ -246,18 +246,18 @@ private fun SearchField(
             .fillMaxWidth()
             .height(58.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(colors.card)
+            .background(colors.surface)
             .border(1.4.dp, border, RoundedCornerShape(20.dp))
             .padding(horizontal = 16.dp),
     ) {
-        KhIcon(KhIcons.Search, Modifier.size(18.dp), colors.inkSoft)
+        KhIcon(KhIcons.Search, Modifier.size(18.dp), colors.textSoft)
         Spacer(Modifier.width(12.dp))
         BasicTextField(
             value = query,
             onValueChange = onQueryChange,
             singleLine = true,
-            textStyle = Type.Title.copy(color = colors.ink, fontSize = 15.sp),
-            cursorBrush = SolidColor(colors.mintDeep),
+            textStyle = Type.Title.copy(color = colors.text, fontSize = 15.sp),
+            cursorBrush = SolidColor(colors.accentDeep),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { onSubmit() }),
             interactionSource = interaction,
@@ -269,7 +269,7 @@ private fun SearchField(
                     if (query.isEmpty()) {
                         BasicText(
                             text = "തിരയുക…",
-                            style = Type.MalLabel.copy(color = colors.inkSoft.copy(alpha = 0.65f), fontSize = 14.sp),
+                            style = Type.MalLabel.copy(color = colors.textSoft.copy(alpha = 0.65f), fontSize = 14.sp),
                         )
                     }
                     inner()
@@ -281,7 +281,7 @@ private fun SearchField(
                 KhIcons.Close,
                 onClear,
                 size = 28,
-                tint = colors.inkSoft,
+                tint = colors.textSoft,
                 background = Color.Transparent,
                 borderColor = Color.Transparent,
             )
@@ -305,7 +305,7 @@ private fun ResultRow(
             .fillMaxWidth()
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(22.dp))
-            .background(colors.card)
+            .background(colors.surface)
             .border(1.dp, colors.line, RoundedCornerShape(22.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 13.dp),
@@ -315,25 +315,25 @@ private fun ResultRow(
             modifier = Modifier
                 .size(36.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(colors.mintSoft),
+                .background(colors.accentSoft),
         ) {
-            KhIcon(icon, Modifier.size(16.dp), colors.mintDeep)
+            KhIcon(icon, Modifier.size(16.dp), colors.accentDeep)
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             BasicText(
                 text = title,
-                style = Type.MalLabel.copy(color = colors.ink, fontSize = 13.5.sp),
+                style = Type.MalLabel.copy(color = colors.text, fontSize = 13.5.sp),
                 maxLines = 1,
             )
             Spacer(Modifier.height(2.dp))
             BasicText(
                 text = subtitle,
-                style = Type.Small.copy(color = colors.inkSoft, fontSize = 10.5.sp),
+                style = Type.Small.copy(color = colors.textSoft, fontSize = 10.5.sp),
                 maxLines = 1,
             )
         }
-        KhIcon(KhIcons.ChevronRight, Modifier.size(15.dp), colors.inkSoft)
+        KhIcon(KhIcons.ChevronRight, Modifier.size(15.dp), colors.textSoft)
     }
 }
 
@@ -346,12 +346,12 @@ private fun EmptyState(query: String, onOpenBookmarks: () -> Unit) {
             .fillMaxWidth()
             .padding(top = 40.dp),
     ) {
-        KhIcon(KhIcons.Search, Modifier.size(34.dp), colors.mintDeep.copy(alpha = 0.6f))
+        KhIcon(KhIcons.Search, Modifier.size(34.dp), colors.accentDeep.copy(alpha = 0.6f))
         Spacer(Modifier.height(14.dp))
         BasicText(
             text = "“$query” കണ്ടെത്തിയില്ല",
             style = Type.MalTitle.copy(
-                color = colors.ink,
+                color = colors.text,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
             ),
@@ -360,7 +360,7 @@ private fun EmptyState(query: String, onOpenBookmarks: () -> Unit) {
         BasicText(
             text = "മറ്റൊരു വാക്ക് ശ്രമിക്കുക അല്ലെങ്കിൽ സേവ് ചെയ്ത പേജുകൾ നോക്കുക",
             style = Type.MalLabel.copy(
-                color = colors.inkSoft,
+                color = colors.textSoft,
                 fontSize = 11.sp,
                 textAlign = TextAlign.Center,
             ),
@@ -369,13 +369,13 @@ private fun EmptyState(query: String, onOpenBookmarks: () -> Unit) {
         Box(
             Modifier
                 .clip(RoundedCornerShape(100))
-                .background(colors.mint)
+                .background(colors.accent)
                 .clickable(onClick = onOpenBookmarks)
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
             BasicText(
                 text = "ബുക്ക്മാർക്കുകൾ",
-                style = Type.MalLabel.copy(color = colors.onMint, fontSize = 12.sp),
+                style = Type.MalLabel.copy(color = colors.onAccent, fontSize = 12.sp),
             )
         }
     }

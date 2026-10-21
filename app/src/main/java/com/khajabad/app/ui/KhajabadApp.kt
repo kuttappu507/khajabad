@@ -105,7 +105,7 @@ fun KhajabadApp(vm: KhajabadViewModel = viewModel()) {
         Box(
             Modifier
                 .fillMaxSize()
-                .background(colors.paper),
+                .background(colors.bg),
         ) {
             AnimatedContent(
                 targetState = route,
@@ -126,10 +126,6 @@ fun KhajabadApp(vm: KhajabadViewModel = viewModel()) {
                             onShare = { shareBook(context, recent.firstOrNull()) },
                             onOpenBook = { vm.openBook(it.id) },
                             onSeeAll = { vm.navigate(Route.Library) },
-                            onCategory = { category ->
-                                if (category.bookId != null) vm.openBook(category.bookId)
-                                else vm.toast("“${category.label}” ഉടൻ വരുന്നു")
-                            },
                             events = events,
                             onOpenEvents = { vm.navigate(Route.Events) },
                             onRefreshEvents = { vm.refreshEvents(force = true) },

@@ -52,7 +52,7 @@ fun BookmarksScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(colors.paper),
+            .background(colors.bg),
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -62,14 +62,14 @@ fun BookmarksScreen(
                     KhIcons.Back,
                     onBack,
                     size = 42,
-                    background = colors.card,
+                    background = colors.surface,
                 )
                 Spacer(Modifier.width(14.dp))
                 Column {
-                    BasicText(text = "Saved pages", style = Type.H2.copy(color = colors.ink))
+                    BasicText(text = "Saved pages", style = Type.H2.copy(color = colors.text))
                     BasicText(
                         text = "${items.size} ബുക്ക്മാർക്കുകൾ",
-                        style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp),
+                        style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp),
                     )
                 }
             }
@@ -86,17 +86,17 @@ fun BookmarksScreen(
                     KhIcon(
                         KhIcons.Bookmark,
                         Modifier.size(30.dp),
-                        colors.mintDeep.copy(alpha = 0.55f),
+                        colors.accentDeep.copy(alpha = 0.55f),
                     )
                     Spacer(Modifier.height(14.dp))
                     BasicText(
                         text = "സേവ് ചെയ്ത പേജുകൾ ഇല്ല",
-                        style = Type.MalTitle.copy(color = colors.ink, fontSize = 14.sp),
+                        style = Type.MalTitle.copy(color = colors.text, fontSize = 14.sp),
                     )
                     Spacer(Modifier.height(6.dp))
                     BasicText(
                         text = "വായിക്കുമ്പോൾ മുകളിലെ ബുക്ക്മാർക്ക് ഐക്കൺ ടാപ്പ് ചെയ്യുക",
-                        style = Type.MalLabel.copy(color = colors.inkSoft, fontSize = 11.sp),
+                        style = Type.MalLabel.copy(color = colors.textSoft, fontSize = 11.sp),
                     )
                 }
             }
@@ -131,7 +131,7 @@ private fun SavedRow(
             .fillMaxWidth()
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(22.dp))
-            .background(colors.card)
+            .background(colors.surface)
             .border(1.dp, colors.line, RoundedCornerShape(22.dp))
             .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .padding(10.dp),
@@ -148,13 +148,13 @@ private fun SavedRow(
         Column(Modifier.weight(1f)) {
             BasicText(
                 text = book.title,
-                style = Type.MalLabel.copy(color = colors.ink, fontSize = 13.sp),
+                style = Type.MalLabel.copy(color = colors.text, fontSize = 13.sp),
                 maxLines = 1,
             )
             Spacer(Modifier.height(3.dp))
             BasicText(
                 text = "പേജ് ${page + 1} / ${book.pages}",
-                style = Type.Small.copy(color = colors.mintDeep, fontSize = 11.sp),
+                style = Type.Small.copy(color = colors.accentDeep, fontSize = 11.sp),
             )
         }
         Box(
@@ -164,7 +164,7 @@ private fun SavedRow(
                 .clip(CircleShape)
                 .clickable(onClick = onRemove),
         ) {
-            KhIcon(KhIcons.BookmarkFull, Modifier.size(15.dp), colors.mintDeep)
+            KhIcon(KhIcons.BookmarkFull, Modifier.size(15.dp), colors.accentDeep)
         }
     }
 }

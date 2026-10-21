@@ -101,7 +101,7 @@ fun Label(
     text: String,
     modifier: Modifier = Modifier,
     style: TextStyle = Type.Label,
-    color: Color = Khaja.colors.inkSoft,
+    color: Color = Khaja.colors.textSoft,
     maxLines: Int = 1,
 ) {
     BasicText(
@@ -121,8 +121,8 @@ fun KhajaButton(
     icon: ImageVector? = null,
     filled: Boolean = true,
     enabled: Boolean = true,
-    contentColor: Color = if (filled) Khaja.colors.onMint else Khaja.colors.ink,
-    bg: Color = if (filled) Khaja.colors.mint else Color.Transparent,
+    contentColor: Color = if (filled) Khaja.colors.onAccent else Khaja.colors.text,
+    bg: Color = if (filled) Khaja.colors.accent else Color.Transparent,
     style: TextStyle = Type.Title,
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -161,8 +161,8 @@ fun RoundIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Int = 44,
-    tint: Color = Khaja.colors.ink,
-    background: Color = Khaja.colors.card.copy(alpha = 0.72f),
+    tint: Color = Khaja.colors.text,
+    background: Color = Khaja.colors.surface.copy(alpha = 0.72f),
     borderColor: Color = Khaja.colors.line,
     description: String? = null,
 ) {
@@ -223,7 +223,7 @@ fun SectionHeader(
     ) {
         BasicText(
             text = title,
-            style = Type.H2.copy(color = Khaja.colors.ink),
+            style = Type.H2.copy(color = Khaja.colors.text),
         )
         if (action != null) {
             val interaction = remember { MutableInteractionSource() }
@@ -234,9 +234,9 @@ fun SectionHeader(
                     .clickable(interactionSource = interaction, indication = null, onClick = onAction)
                     .padding(horizontal = 4.dp, vertical = 4.dp),
             ) {
-                BasicText(text = action, style = Type.Small.copy(color = Khaja.colors.inkSoft))
+                BasicText(text = action, style = Type.Small.copy(color = Khaja.colors.textSoft))
                 Spacer(Modifier.width(2.dp))
-                KhIcon(KhIcons.ChevronRight, Modifier.size(14.dp), Khaja.colors.inkSoft)
+                KhIcon(KhIcons.ChevronRight, Modifier.size(14.dp), Khaja.colors.textSoft)
             }
         }
     }
@@ -260,7 +260,7 @@ fun ShimmerBox(modifier: Modifier = Modifier, shape: RoundedCornerShape = Rounde
     Box(
         modifier
             .clip(shape)
-            .background(colors.paperAlt)
+            .background(colors.bgAlt)
             .drawWithContent {
                 drawContent()
                 val w = size.width
@@ -269,7 +269,7 @@ fun ShimmerBox(modifier: Modifier = Modifier, shape: RoundedCornerShape = Rounde
                     brush = Brush.linearGradient(
                         colors = listOf(
                             Color.Transparent,
-                            colors.card.copy(alpha = 0.9f),
+                            colors.surface.copy(alpha = 0.9f),
                             Color.Transparent,
                         ),
                         start = Offset(start, 0f),
@@ -333,11 +333,11 @@ fun PdfPageImage(
             }
             PageState.Failed -> if (showPlaceholder) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    KhIcon(KhIcons.Info, Modifier.size(22.dp), Khaja.colors.inkSoft)
+                    KhIcon(KhIcons.Info, Modifier.size(22.dp), Khaja.colors.textSoft)
                     Spacer(Modifier.height(8.dp))
                     BasicText(
                         text = "പേജ് ലഭ്യമല്ല",
-                        style = Type.MalLabel.copy(color = Khaja.colors.inkSoft),
+                        style = Type.MalLabel.copy(color = Khaja.colors.textSoft),
                     )
                 }
             }
@@ -394,7 +394,7 @@ fun KhajaBottomBar(
             .padding(horizontal = 26.dp)
             .softShadow(elevation = 24f, radius = 34f)
             .clip(shape)
-            .background(colors.card.copy(alpha = 0.97f))
+            .background(colors.surface.copy(alpha = 0.97f))
             .border(1.dp, colors.line, shape)
             .padding(7.dp),
     ) {
@@ -410,7 +410,7 @@ fun KhajaBottomBar(
                 .width(itemWidth)
                 .height(54.dp)
                 .clip(RoundedCornerShape(26.dp))
-                .background(colors.mint),
+                .background(colors.accent),
         )
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             destinations.forEachIndexed { index, dest ->
@@ -434,13 +434,13 @@ fun KhajaBottomBar(
                     KhIcon(
                         dest.icon,
                         Modifier.size(20.dp),
-                        if (selected) colors.onMint else colors.inkSoft,
+                        if (selected) colors.onAccent else colors.textSoft,
                     )
                     Spacer(Modifier.height(2.dp))
                     BasicText(
                         text = dest.label,
                         style = Type.Small.copy(
-                            color = if (selected) colors.onMint else colors.inkSoft,
+                            color = if (selected) colors.onAccent else colors.textSoft,
                             fontSize = 10.sp,
                             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                         ),
@@ -460,14 +460,14 @@ fun ToastPill(text: String, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .clip(RoundedCornerShape(100))
-            .background(colors.ink)
+            .background(colors.text)
             .padding(horizontal = 18.dp, vertical = 12.dp),
     ) {
-        KhIcon(KhIcons.Check, Modifier.size(15.dp), colors.mint)
+        KhIcon(KhIcons.Check, Modifier.size(15.dp), colors.accent)
         Spacer(Modifier.width(9.dp))
         BasicText(
             text = text,
-            style = Type.MalLabel.copy(color = colors.paper, fontSize = 13.sp),
+            style = Type.MalLabel.copy(color = colors.bg, fontSize = 13.sp),
         )
     }
 }
@@ -476,7 +476,7 @@ fun ToastPill(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun SpinningStar(
     modifier: Modifier = Modifier,
-    color: Color = Khaja.colors.gold,
+    color: Color = Khaja.colors.amber,
     durationMillis: Int = 26000,
 ) {
     val transition = rememberInfiniteTransition(label = "star")

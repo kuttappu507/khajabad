@@ -55,9 +55,9 @@ class LaunchSmokeTest {
         // Splash finishes on its own after ~2.5 s, then Home animates in.
         settle()
         compose.onRoot().assertExists()
-        assertText("Recent")
         assertText("khajabad")
-        assertText("See all")
+        assertText("Your books")
+        assertText("Library")
     }
 
     @Test
@@ -77,15 +77,28 @@ class LaunchSmokeTest {
     }
 
     @Test
-    fun scrollReachesNextEventsAndBrowse() {
+    fun scrollReachesNextEvents() {
         settle()
         // Home is one LazyColumn; scroll it until the lower sections compose.
         compose.onAllNodes(hasScrollAction(), useUnmergedTree = true)[0]
             .performScrollToNode(hasText("Next events"))
         assertText("Next events")
-        compose.onAllNodes(hasScrollAction(), useUnmergedTree = true)[0]
-            .performScrollToNode(hasText("Browse"))
-        assertText("Browse")
+        assertText("All events")
+    }
+
+    /**
+     * The reader is a continuous vertical scroll (not a pager): opening a book
+     * must show page 1 of the real PDF and the scrolling chrome.
+     */
+    @Test
+    fun readerOpensAsContinuousScroll() {
+        settle()
+        compose.onAllNodesWithText("ശജരത്തുൽ മുബാറക്ക", useUnmergedTree = true)[0].performClick()
+        settle(2)
+        compose.onAllNodes(hasText("പേജ് 1 / 12", substring = true), useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .let { assert(it.isNotEmpty()) { "Reader chrome did not show the page counter" } }
+        assertText("തുടർച്ചയായ സ്ക്രോൾ · സമ്പൂർണ്ണ വീതി")
     }
 
     @Test
