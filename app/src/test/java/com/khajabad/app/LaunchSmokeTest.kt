@@ -1,6 +1,9 @@
 package com.khajabad.app
 
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
@@ -53,8 +56,8 @@ class LaunchSmokeTest {
         settle()
         compose.onRoot().assertExists()
         assertText("Recent")
-        assertText("Next events")
-        assertText("BROWSE")
+        assertText("khajabad")
+        assertText("See all")
     }
 
     @Test
@@ -69,7 +72,19 @@ class LaunchSmokeTest {
         settle()
         compose.onAllNodesWithText("Library", useUnmergedTree = true)[0].performClick()
         settle(1)
-        assertText("Saved pages")
+        assertText("PDF ചേർക്കുക")
+        assertText("സേവ് ചെയ്ത പേജുകൾ")
+    }
+
+    @Test
+    fun scrollReachesNextEventsAndBrowse() {
+        settle()
+        compose.onNode(hasScrollAction(), useUnmergedTree = true)
+            .performScrollToNode(hasText("Next events"))
+        assertText("Next events")
+        compose.onNode(hasScrollAction(), useUnmergedTree = true)
+            .performScrollToNode(hasText("BROWSE"))
+        assertText("BROWSE")
     }
 
     @Test

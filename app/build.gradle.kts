@@ -87,6 +87,7 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+            all { it.testLogging { events("passed", "failed", "skipped"); showStandardStreams = true } }
         }
     }
 
