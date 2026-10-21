@@ -27,9 +27,9 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:preDebugUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompileDebug
-> Task :app:processDebugManifestForPackage
 > Task :app:javaPreCompileDebugUnitTest
+> Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebug
 > Task :app:mergeDebugShaders
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
@@ -45,27 +45,8 @@ Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:compileDebugUnitTestKotlin
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes
-
 > Task :app:testDebugUnitTest
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792555709348.json
 
-LaunchSmokeTest > activityLaunchesAndRenders FAILED
-    java.lang.IllegalStateException at FontFamilyResolver.kt:207
-        Caused by: java.lang.IllegalStateException at FontListFontFamilyTypefaceAdapter.kt:193
-            Caused by: android.content.res.Resources$NotFoundException at ResourcesCompat.java:572
-
-1 test completed, 1 failed
-
-> Task :app:testDebugUnitTest FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/test-1792555429433.json
-
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':app:testDebugUnitTest'.
-> There were failing tests. See the report at: file:///home/runner/work/khajabad/khajabad/app/build/reports/tests/testDebugUnitTest/index.html
-
-* Try:
-> Run with --scan to get full insights.
-
-BUILD FAILED in 2m 22s
+BUILD SUCCESSFUL in 2m 15s
 28 actionable tasks: 28 executed
